@@ -2,6 +2,8 @@
 
 Open source HTML5 charts using the canvas tag. This library is used by NextReports from version 7.
 
+![alt tag](http://2.bp.blogspot.com/-ouJicYwR4D0/Uv3pAiWORgI/AAAAAAAAJDo/a6RxWpXU3QM/s1600/NextServerCharts-white.png)
+
 ##Samples
 
 There are some samples (to see how json properties must be specified) in src/html:
