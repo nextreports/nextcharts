@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>NextReports Charts</title>
+
+<style type="text/css">
+  .tip {
+    background-color:white;
+    border:1px solid gray;
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    position:absolute;
+    left:-200px;
+    top:100px;
+  }
+  
+  .canvas {
+  	border: 1px solid gray;
+  	margin: 2px;
+  }
+</style>
+
+
+<script type="text/javascript" src="../js/jquery-1.10.2.min.js"></script>
+
+<!-- You should add just the nextcharts.min.js instead of all following js files -->
+<script type="text/javascript" src="../js/color-util.js"></script> 
+<script type="text/javascript" src="../js/chart-util.js"></script> 
+<script type="text/javascript" src="../js/linechart.js"></script>
+<script type="text/javascript" src="../js/barchart.js"></script>
+<script type="text/javascript" src="../js/piechart.js"></script>
+<script type="text/javascript" src="../js/nextchart.js"></script>
+<script>
+
+	// enables cross-site scripting in jQuery 
+	// without it ajax calls do not work in IE
+	jQuery.support.cors = true;
+		
+	var urls = new Array();	
+	urls.push("http://localhost:8080?id=1&type=bar");
+	urls.push("http://localhost:8080?id=2&type=line");	
+	urls.push("http://localhost:8080?id=3&type=pie");	
+	urls.push("http://localhost:8080?id=4&type=stackedbar");	
+	urls.push("http://localhost:8080?id=5&type=hbar");	
+	urls.push("http://localhost:8080?id=6&type=stackline");
+	
+	$( document ).ready(function() {
+		addCanvases();		
+	});
+		
+	for(var i=0; i<urls.length; i++) { 				
+		$.getJSON(urls[i]).then( 
+				function(data){		
+					//console.log(data);					
+					var id = getId(this.url);
+					//console.log("id="+id+ "  url="+this.url);					
+					nextChart(data, 'canvas'+id, 'tip' + id);					
+	    		},
+		    	function(jqXHR, textStatus, errorThrown) {
+	    			alert("Error: " + textStatus + " errorThrown: " + errorThrown);
+	    		}	
+		);	
+	}
+	
+	function getId(url) {
+		return getParameterValueFromURL(url, "id");
+	}
+	
+	
+	// dynamically create canvas tags
+	function addCanvases() {
+		  var body = document.getElementsByTagName("body")[0] ;		 
+		  for(var i=0; i<urls.length; i++) { 				  
+		  	var newCanvas = document.createElement('canvas');
+		  	newCanvas.setAttribute('id','canvas'+(i+1));
+		  	newCanvas.setAttribute('width','500');
+		  	newCanvas.setAttribute('height','300');
+		  	newCanvas.setAttribute('class','canvas');		  
+		  	body.appendChild(newCanvas);
+		  	
+		  	var newTipCanvas = document.createElement('canvas');
+		  	newTipCanvas.setAttribute('id','tip'+(i+1));
+		  	newTipCanvas.setAttribute('width','1');
+		  	newTipCanvas.setAttribute('height','25');
+		  	newTipCanvas.setAttribute('class','tip');		  
+		  	body.appendChild(newTipCanvas);
+		  }
+		}
+	
+</script>
+</head>
+
+<body>	 
+	   
+</body>
+</html>

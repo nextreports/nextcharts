@@ -1,0 +1,47 @@
+<project name="nextreports-charts">
+    
+    <property name="version" value="1.0"/>
+    <property name="jsdir" value="./src/js"/>
+    <property name="target" value="artifacts"/>
+    <property name="nextreports-charts-file" value="nextcharts-${version}.js"/>
+    <property name="nextreports-charts-min-file" value="nextcharts-${version}.min.js"/>
+    
+    <target name="concat-js-files">	    	
+	    <filelist id="filelist" dir="${jsdir}">
+	       <file name="color-util.js"/>
+	       <file name="chart-util.js" />
+	       <file name="barchart.js" />
+	       <file name="linechart.js" />
+	       <file name="piechart.js" />
+	       <file name="nextchart.js" />
+	    </filelist>
+	    
+	    <concat destfile="${target}/${nextreports-charts-file}" encoding="UTF-8" outputencoding="UTF-8" fixlastline="true">
+	        <filelist refid="filelist" />
+	    </concat>
+	</target>
+
+	<target name="minify-js" depends="clean, concat-js-files">
+	    <mkdir dir="${target}"/>     
+	    <apply executable="java" parallel="false" dest="${target}">
+	        <fileset dir="${target}" includes="${nextreports-charts-file}"/>
+	        <arg line="-jar"/>
+	        <arg path="./lib/yuicompressor-2.4.7.jar"/>
+	        <srcfile/>
+	        <arg line="-o"/>
+	        <mapper type="glob" from="*.js" to="*.min.js"/>
+	        <targetfile/>	        
+    	</apply>
+	</target>
+	
+	<target name="deploy" depends="minify-js">
+		<copy todir="${jsdir}">
+            <fileset dir="${target}" includes="${nextreports-charts-min-file}"/>
+        </copy>    	
+    </target>        
+        	
+	<target name="clean">       
+        <delete dir="${target}"/>        
+    </target>
+
+</project>

@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>NextReports Charts</title>
+
+<style type="text/css">
+   
+   body, html {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+   }
+
+  .tip {
+    background-color:white;
+    border:1px solid gray;
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    position:absolute;
+    left:-200px;
+    top:100px;
+  }
+  
+  .canvas {
+  	border: 1px solid gray;
+  	margin: 2px;
+  }
+</style>
+
+
+<script type="text/javascript" src="../js/jquery-1.10.2.min.js"></script>
+
+<!-- You should add just the nextcharts.min.js instead of all following js files -->
+<script type="text/javascript" src="../js/color-util.js"></script> 
+<script type="text/javascript" src="../js/chart-util.js"></script> 
+<script type="text/javascript" src="../js/linechart.js"></script>
+<script type="text/javascript" src="../js/barchart.js"></script>
+<script type="text/javascript" src="../js/piechart.js"></script>
+<script type="text/javascript" src="../js/nextchart.js"></script>
+<script>
+	
+	var background = "white"; // "black";
+	var jsons = new Array();
+	createJsons();			
+	var count = jsons.length;
+	
+	$(document).ready(function() {		
+		addCanvases();		
+		drawCharts();		
+	});
+					
+	// dynamically create canvas tags
+	function addCanvases() {
+		  var body = document.getElementsByTagName("body")[0] ;		 
+		  for(var i=0; i<count; i++) { 				  
+		  	var newCanvas = document.createElement('canvas');
+		  	newCanvas.setAttribute('id','canvas'+(i+1));
+		  	newCanvas.setAttribute('width','500');
+		  	newCanvas.setAttribute('height','300');
+		  	newCanvas.setAttribute('class','canvas');		  
+		  	body.appendChild(newCanvas);
+		  	
+		  	var newTipCanvas = document.createElement('canvas');
+		  	newTipCanvas.setAttribute('id','tip'+(i+1));
+		  	newTipCanvas.setAttribute('width','1');
+		  	newTipCanvas.setAttribute('height','25');
+		  	newTipCanvas.setAttribute('class','tip');		  
+		  	body.appendChild(newTipCanvas);
+		  }
+	}
+	
+	// draw next charts
+	function drawCharts() {
+		for(var i=0; i<count; i++) { 				
+			var id = jsons[i].id;
+			var data = JSON.parse(jsons[i].json);	
+			nextChart(data, 'canvas'+id, 'tip' + id, "32.95%", "48.95%");						
+		}		
+	}
+	
+	// create test jsons
+	function createJsons() {
+		
+		jsons.push({id:"1", json:"{\"data\":[[16,66,24,30,80,52],[48,50,29,60,70,58],[30,40,28,52,74,50]]," + 
+	        " \"labels\":[\"JANUARY\",\"FEBRUARY\",\"MARCH\",\"APRIL\",\"MAY\",\"JUNE\"]," + 
+			" \"color\":[\"#004CB3\",\"#A04CB3\",\"#7aa37a\"]," +
+	        " \"legend\":[\"2011 First year of work\",\"2012 Second year of work\",\"2013 Third year of work\"]," +
+			" \"alpha\":0.6," + 
+			" \"showGridX\":false," + 
+			" \"showGridY\":false," + 			
+	        " \"message\":\"Value #val\"," + 
+	        " \"tickCount\":5, " +
+			" \"title\":{\"text\":\"Financial Analysis\", \"font\":{\"weight\":\"bold\", \"size\":16, \"family\":\"sans-serif\"}, \"color\":\"blue\"}," +
+	        " \"labelOrientation\":\"horizontal\"," +
+	        " \"background\":\"" + background + "\"," +
+	        " \"type\":\"bar\"," +
+	        " \"style\":\"glass\"," +
+	        " \"yData\":{\"font\":{\"weight\":\"bold\",\"size\":10,\"family\":\"sans-serif\"}, \"color\":\"blue\"}," +
+	        " \"xData\":{\"font\":{\"weight\":\"bold\",\"size\":10,\"family\":\"sans-serif\"}, \"color\":\"blue\"}," +
+	        " \"onClick\":\"function doClick(value){ console.log('Call from function : ' + value);}\""+
+	        "}"});
+	
+		jsons.push({id:"2", json:"{\"data\":[[16,66,24,30,80,52],[48,50,29,60,60,58],[30,40,28,52,34,50]]," + 
+	        " \"labels\":[\"JAN\",\"FEB\",\"MAR\",\"APR\",\"MAY\",\"JUN\"]," + 
+			" \"color\":[\"#004CB3\",\"#A04CB3\",\"#7aa37a\"]," +
+	        " \"legend\":[\"2011 First year of work\",\"2012 Second year of work\",\"2013 Third year of work\"]," +
+			" \"alpha\":0.6," + 
+			" \"showGridX\":true," + 
+			" \"showGridY\":true," + 
+			" \"colorGridX\":\"rgb(0,198,189)\"," + 
+			" \"colorGridY\":\"rgb(0,198,189)\"," + 
+	        " \"message\":\"Value #val\"," + 
+	        " \"tickCount\":5, " +
+			" \"title\":{\"text\":\"Financial Analysis\", \"font\":{\"weight\":\"bold\", \"size\":16, \"family\":\"sans-serif\"}, \"color\":\"blue\", \"alignment\":\"center\"}," +
+	        " \"labelOrientation\":\"horizontal\"," +     
+	        " \"background\":\"" + background + "\"," +
+	        " \"type\":\"area\"," +
+	        " \"style\":\"soliddot\"," +
+	        " \"yData\":{\"font\":{\"weight\":\"bold\",\"size\":14,\"family\":\"sans-serif\"}, \"color\":\"blue\"}," +
+	        " \"xData\":{\"font\":{\"weight\":\"bold\",\"size\":14,\"family\":\"sans-serif\"}, \"color\":\"blue\"}," +
+	        " \"yLegend\":{\"text\":\"Price\",\"font\":{\"weight\":\"bold\",\"size\":14,\"family\":\"sans-serif\"}, \"color\":\"#993366\"}," +
+	        " \"xLegend\":{\"text\":\"Month\",\"font\":{\"weight\":\"bold\",\"size\":14,\"family\":\"sans-serif\"}, \"color\":\"#993366\"}" +
+	        "}"});
+		
+		jsons.push({id:"3", json:"{\"data\":[[16,66,24,30,80,52]]," + 
+	        " \"labels\":[\"JANUARY\",\"FEBRUARY\",\"MARCH\",\"APRIL\",\"MAY\",\"JUNE\"]," + 
+			" \"color\": [\"#004CB3\",\"#A04CB3\", \"#7aa37a\", \"#f18e9f\", \"#90e269\", \"#bc987b\"]," +	         
+			" \"alpha\":0.6," + 
+	        " \"message\":\"Value #val from #total<br>#percent% of 100%\"," +
+			" \"title\":{\"text\":\"Financial Analysis\", \"font\":{\"weight\":\"bold\", \"size\":16, \"family\":\"sans-serif\"}, \"color\":\"blue\", \"alignment\":\"center\"}," +	                 
+	        " \"xData\":{\"font\":{\"weight\":\"bold\",\"size\":16,\"family\":\"sans-serif\"}, \"color\":\"blue\"}," +
+	        " \"background\":\"" + background + "\"," +
+	        " \"type\":\"pie\"" +	         
+	        "}"});
+		
+		jsons.push({id:"4", json:"{\"data\":[[16,66,24,30,80,52],[48,50,29,60,60,58],[20,40,28,52,34,50]]," + 
+	        " \"labels\":[\"JAN\",\"FEB\",\"MAR\",\"APR\",\"MAY\",\"JUN\"]," + 
+		 	" \"color\":[\"#004CB3\",\"#A04CB3\",\"#7aa37a\"]," +
+	        " \"legend\":[\"2011 First year of work\",\"2012 Second year of work\",\"2013 Third year of work\"]," +
+			" \"alpha\":0.6," + 
+			" \"showGridX\":true," + 
+			" \"showGridY\":true," + 
+			" \"colorGridX\":\"rgb(0,198,189)\"," + 
+			" \"colorGridY\":\"rgb(0,198,189)\"," +		 
+	        " \"message\":\"Value #val <br>from #total\"," + 
+	        " \"tickCount\":5, " +
+			" \"title\":{\"text\":\"Financial Analysis\", \"font\":{\"weight\":\"bold\", \"size\":16, \"family\":\"sans-serif\"}, \"color\":\"blue\", \"alignment\":\"center\"}," +
+	        " \"labelOrientation\":\"horizontal\"," +
+	        " \"background\":\"" + background + "\"," +
+	        " \"type\":\"stackedbar\"," +
+	        " \"style\":\"dome\"," +
+	        " \"yData\":{\"font\":{\"weight\":\"bold\",\"size\":14,\"family\":\"sans-serif\"}, \"color\":\"blue\"}," +
+	        " \"xData\":{\"font\":{\"weight\":\"bold\",\"size\":14,\"family\":\"sans-serif\"}, \"color\":\"blue\"}," +
+	        " \"yLegend\":{\"text\":\"Price\",\"font\":{\"weight\":\"bold\",\"size\":14,\"family\":\"sans-serif\"}, \"color\":\"#993366\"}," +
+	        " \"xLegend\":{\"text\":\"Month\",\"font\":{\"weight\":\"bold\",\"size\":14,\"family\":\"sans-serif\"}, \"color\":\"#993366\"}" +
+	        "}"});		
+		
+		jsons.push({id:"5", json:"{\"data\":[[16,66,24,30,80,52],[48,50,29,60,60,58],[30,40,28,52,34,50]]," + 
+	        " \"labels\":[\"JAN\",\"FEB\",\"MAR\",\"APR\",\"MAY\",\"JUN\"]," + 
+			" \"color\":[\"#004CB3\",\"#A04CB3\",\"#7aa37a\"]," +
+	        " \"legend\":[\"2011 First year of work\",\"2012 Second year of work\",\"2013 Third year of work\"]," +
+			" \"alpha\":0.6," + 
+			" \"showGridX\":true," + 
+			" \"showGridY\":true," + 
+			" \"colorGridX\":\"rgb(0,198,189)\"," + 
+			" \"colorGridY\":\"rgb(0,198,189)\"," + 
+			" \"tickCount\":5, " +
+			" \"title\":{\"text\":\"Financial Analysis\", \"font\":{\"weight\":\"bold\", \"size\":16, \"family\":\"sans-serif\"}, \"color\":\"blue\", \"alignment\":\"center\"}," +
+	        " \"labelOrientation\":\"vertical\"," +
+	        " \"background\":\"" + background + "\"," +
+	        " \"type\":\"hstackedbar\"," +
+	        " \"style\":\"cylinder\"," +
+	        " \"yData\":{\"font\":{\"weight\":\"bold\",\"size\":14,\"family\":\"sans-serif\"}, \"color\":\"blue\"}," +
+	        " \"xData\":{\"font\":{\"weight\":\"bold\",\"size\":14,\"family\":\"sans-serif\"}, \"color\":\"blue\"}," +
+	        " \"yLegend\":{\"text\":\"Price\",\"font\":{\"weight\":\"bold\",\"size\":14,\"family\":\"sans-serif\"}, \"color\":\"#993366\"}," +
+	        " \"xLegend\":{\"text\":\"Month\",\"font\":{\"weight\":\"bold\",\"size\":14,\"family\":\"sans-serif\"}, \"color\":\"#993366\"}" +
+	        "}"});
+		
+		jsons.push({id:"6", json:"{\"data\":[[16,66,24,30,80,52],[48,50,29,60,60,58],[30,40,28,52,34,50]]," + 
+	        " \"lineData\":[[31.33, 52, 27, 47.33, 74.66, 53.33],[100, 120, 53, 190, 40, 130]],"+
+	        " \"labels\":[\"JAN\",\"FEB\",\"MAR\",\"APR\",\"MAY\",\"JUN\"]," + 
+			" \"color\":[\"#004CB3\",\"#A04CB3\",\"#7aa37a\"]," +
+	        " \"lineColor\":[\"#270283\", \"#CC6633\"]," +
+	        " \"legend\":[\"2011\",\"2012\",\"2013\"]," +
+	        " \"lineLegend\":[\"Average\", \"Profit\"]," +
+			" \"alpha\":0.6," + 
+			" \"showGridX\":true," + 
+			" \"showGridY\":true," + 
+			" \"colorGridX\":\"rgb(0,198,189)\"," + 
+			" \"colorGridY\":\"rgb(0,198,189)\"," + 
+	        " \"message\":\"Value #val from #total\"," + 
+	        " \"tickCount\":4, " +
+			" \"title\":{\"text\":\"Financial Analysis\", \"font\":{\"weight\":\"bold\", \"size\":16, \"family\":\"sans-serif\"}, \"color\":\"blue\", \"alignment\":\"center\"}," +
+	        " \"labelOrientation\":\"horizontal\"," +
+	        " \"background\":\"" + background + "\"," +
+	        " \"type\":\"stackedbar\"," +
+	        " \"style\":\"glass\"," +
+	        " \"yData\":{\"font\":{\"weight\":\"bold\",\"size\":14,\"family\":\"sans-serif\"}, \"color\":\"blue\"}," +
+	        " \"xData\":{\"font\":{\"weight\":\"bold\",\"size\":14,\"family\":\"sans-serif\"}, \"color\":\"blue\"}," +
+	        " \"yLegend\":{\"text\":\"Price\",\"font\":{\"weight\":\"bold\",\"size\":14,\"family\":\"sans-serif\"}, \"color\":\"#993366\"}," +
+	        " \"xLegend\":{\"text\":\"Month\",\"font\":{\"weight\":\"bold\",\"size\":14,\"family\":\"sans-serif\"}, \"color\":\"#993366\"}" +
+	        "}"});
+	}
+	
+</script>
+</head>
+<body>	 	   
+</body>
+</html>
