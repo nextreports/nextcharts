@@ -63,6 +63,8 @@ var line = 20;
 var hline = 5;
 var resizeWidth = false;
 var resizeHeight = false;
+// position computed if labels are outside canvas; used to shrink the radius
+var delta = 0;
 
 function drawPie(myjson, idCan, idTipCan, canWidth, canHeight) {	
 			
@@ -82,6 +84,12 @@ function drawPie(myjson, idCan, idTipCan, canWidth, canHeight) {
 	}			
 	
 	data = obj.data[0];	
+	// prevent negative values
+	for (var i=0; i<data.length; i++) {
+		if (data[i] < 0) {					
+			data[i] = 0;
+		}
+	}
 	
 	labels = obj.labels; 			
 	
@@ -198,8 +206,8 @@ function drawData(withFill, withClick, mousePos) {
 	// total up all the data for chart
 	for (var i in data) { total += data[i]; }
 	
-	if (radius < H) {
-        H = radius;
+	if (radius-delta < H) {
+        H = radius-delta;
     } else {
         stop = false;
     } 
@@ -214,8 +222,10 @@ function drawData(withFill, withClick, mousePos) {
 		pieData[i]['endAngle'] = 2 * Math.PI * (lastPosition + (data[i]/total));
 		pieData[i]['labelAngle'] = pieData[i]['startAngle'] + Math.abs(pieData[i]['endAngle']-pieData[i]['startAngle'])/2;
 		pieData[i]['middle'] = [center[0]+H*Math.cos(pieData[i]['labelAngle']), center[1]+H*Math.sin(pieData[i]['labelAngle'])];
+		pieData[i]['labelpos'] = [pieData[i]['middle'][0] + line*Math.cos(pieData[i]['labelAngle']) ,pieData[i]['middle'][1] + line*Math.sin(pieData[i]['labelAngle'])];	
 		lastPosition += data[i]/total;
-	}
+	}	
+	delta = adjustYLabels(pieData, center, H+line);	
 			    
 	for(var i=0; i<data.length; i++) {  	  		 	  	    		   	    	    	    	     
 	    
@@ -251,16 +261,19 @@ function drawData(withFill, withClick, mousePos) {
 			var fromCenterY = mousePos.y - center[1];
 			var fromCenter = Math.sqrt(Math.pow(Math.abs(fromCenterX), 2) + Math.pow(Math.abs(fromCenterY), 2 ));
 
-			if (fromCenter <= radius) {
+			if (fromCenter <= radius-delta) {
 				var angle = Math.atan2(fromCenterY, fromCenterX);
 				if (angle < 0) angle = 2 * Math.PI + angle; // normalize
 
 				for (var slice in pieData) {
 					if (angle >= pieData[slice]['startAngle'] && angle <= pieData[slice]['endAngle']) {
-						var tValue = pieData[slice]['value'];						
+						var tValue = pieData[slice]['value'];
+						var tTotal = total;
 			    		if (obj.tooltipPattern !== undefined) {
 			    			tValue = formatNumber(tValue, obj.tooltipPattern.decimals, obj.tooltipPattern.decimalSeparator, obj.tooltipPattern.thousandSeparator);
-			    		}	  		
+			    			tTotal = formatNumber(tTotal, obj.tooltipPattern.decimals, obj.tooltipPattern.decimalSeparator, obj.tooltipPattern.thousandSeparator);
+			    		}	  	
+			    		
 			    		var returnValue;
 			    		if (labels === undefined) {
 			    			returnValue = "";
@@ -271,7 +284,7 @@ function drawData(withFill, withClick, mousePos) {
 			    			return returnValue;
 			    		} else {
 					    	var mes = String(message).replace('#val', tValue);
-					    	mes = mes.replace('#total', total);
+					    	mes = mes.replace('#total', tTotal);
 					    	mes = mes.replace('#percent', pieData[slice]['percent']);
 					    	if (obj.onClick !== undefined) {
 					    		canvas.style.cursor = 'pointer';
@@ -299,8 +312,8 @@ function drawData(withFill, withClick, mousePos) {
 function drawLabels(i, pieData) {
 	var x = pieData[i]['middle'][0];
 	var y = pieData[i]['middle'][1];
-	var x1 = x + line*Math.cos(pieData[i]['labelAngle']);
-	var y1 = y + line*Math.sin(pieData[i]['labelAngle']);	
+	var x1 = pieData[i]['labelpos'][0];
+	var y1 = pieData[i]['labelpos'][1];	
 	
 	c.beginPath();
 	c.moveTo(x, y);
@@ -338,7 +351,7 @@ function drawLabels(i, pieData) {
 		c.font = xfont.weight + b + xfont.size + "px" + b + xfont.family;  
 	} else {		
 		c.font = "bold 12px sans-serif";
-	}	   		
+	}	   			
 		
 	if (writeFrom) {
 		c.fillText(labels[i],x1+5, y1 + fontHeight/2);
@@ -470,6 +483,49 @@ function getMaxLabelWidth() {
 	return max;
 }
 
+// test if label text are overlapping on Y axis
+// if yes we modify ylabel position and compute a delta to update pie radius (if position is outside canvas)
+function adjustYLabels(pieData, center, R) {
+	var f = getFontHeight();
+	var d = 0;
+	for(var i=1; i<pieData.length; i++) {
+		var y1 = pieData[i-1]['labelpos'][1];
+		var y2 = pieData[i]['labelpos'][1];		
+		if (isRightCadran(i, pieData) && isRightCadran(i-1, pieData)) {
+			if ( ((y1 <= y2) &&  (y1 + f/2 > y2 - f/2)) ||
+			     (y1 > y2)  ) {				
+					pieData[i]['labelpos'][1] = y1 + f/2 + 5;	
+					var m = Math.pow(R,2) - Math.pow(pieData[i]['labelpos'][1]-center[1],2);
+					if (m > 0) {
+						pieData[i]['labelpos'][0] = center[0] + Math.sqrt(m);
+					} else {
+						pieData[i]['labelpos'][0] = center[0] - Math.sqrt(-m);
+					}
+					if (pieData[i]['labelpos'][1] > realHeight-titleSpace) {					
+						d += f;						
+					}
+			}	
+		} else if (!isRightCadran(i, pieData) && !isRightCadran(i-1, pieData)) {
+			if ( ((y1 >= y2) &&  (y1 - f/2 < y2 + f/2)) ||
+				     (y1 < y2)  ) {				
+						pieData[i]['labelpos'][1] = y1 - f/2 - 5;	
+						var m = Math.pow(R,2) - Math.pow(pieData[i]['labelpos'][1]-center[1],2);
+						if (m > 0) {
+							pieData[i]['labelpos'][0] = center[0] - Math.sqrt(m);
+						} else {
+							if (pieData[i]['labelAngle'] > 3*Math.PI/2) {
+								pieData[i]['labelpos'][0] = center[0] + Math.sqrt(-m);
+							}
+						}							
+						if (pieData[i]['labelpos'][1] < titleSpace + f) {					
+							d += f;						
+						}
+				}	
+		}
+	}
+	return d;
+}
+
 function resizeCanvas() {
 	var w = canWidth;
 	if (resizeWidth) {
@@ -485,6 +541,27 @@ function resizeCanvas() {
 	}
 	updateSize(w, h);
 	drawChart();
+}
+
+function getFontHeight() {
+	var fontHeight = 12;	
+	if (obj.xData !== undefined) {		 		
+		var xfont = obj.xData.font;
+		fontHeight = xfont.size;		  
+	}    	
+	return fontHeight;
+}
+
+function isRightCadran(i, pieData) {
+	var yes = true;	
+	if (pieData[i]['labelAngle'] <= Math.PI/2) {		
+		yes = true;						
+	} else if (pieData[i]['labelAngle'] <= 3*Math.PI/2) {		
+		yes = false;
+	} else if (pieData[i]['labelAngle'] <= 2*Math.PI) {
+		yes = true;	
+	}
+	return yes;
 }
 
 
