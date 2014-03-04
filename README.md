@@ -1,6 +1,6 @@
 #NextCharts
 
-Open source HTML5 charts using the canvas tag. This library is used by NextReports from version 7.
+Open source HTML5 charts using the canvas tag. This library is used by [NextReports](https://github.com/nextreports/nextreports) from version 7.
 
 ![alt tag](http://2.bp.blogspot.com/-ouJicYwR4D0/Uv3pAiWORgI/AAAAAAAAJDo/a6RxWpXU3QM/s1600/NextServerCharts-white.png)
 
