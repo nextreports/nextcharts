@@ -4,7 +4,7 @@
  * type -> line, area
  * style -> normal, soliddot, hollowdot, anchordot, bowdot, stardot
  * labelOrientation -> horizontal, vertical, diagonal, halfdiagonal
- * message -> can have markup #val for value
+ * message -> can have markup #val for value, , #x for x label
  *         -> can contain <br> to split text on more lines
  * title.alignment -> center, left, right
  * onClick -> is a javascript function like 'function doClick(value){ ...}'  *            
@@ -379,6 +379,7 @@ function drawData(withFill, withClick, mousePos) {
 	    			return returnValue;
 	    		} else {
 			    	var mes = String(message).replace('#val', tValue);	
+			    	mes = mes.replace('#x', returnValue);
 			    	if (obj.onClick !== undefined) {
 			    		canvas.style.cursor = 'pointer';
 			    	}

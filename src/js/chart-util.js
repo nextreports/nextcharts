@@ -106,6 +106,7 @@ var handleMouseEvent = {
     if (lines.length == 1) {   
     	// a single line of text (do not need to modify tipCanvas height)
         tipCanvas.width = textWidth + 20;
+        tipCanvas.height = 25;
         x = tipCanvas.width/2 - textWidth/2;         
         tipCtx.fillText(this.tooltip, x, 15);
     } else {

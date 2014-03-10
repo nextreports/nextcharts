@@ -2,7 +2,7 @@
  * Json must contain as mandatory only "data" attribute 
  * 
  * type -> piechart
- * message -> can have two markups #val for value, #percent for percent and #total for total value
+ * message -> can have two markups #val for value, #percent for percent, #total for total value, #x for x label
  *         -> can contain <br> to split text on more lines
  * title.alignment -> center, left, right
  * onClick -> is a javascript function like 'function doClick(value){ ...}'  *            
@@ -284,6 +284,7 @@ function drawData(withFill, withClick, mousePos) {
 			    			return returnValue;
 			    		} else {
 					    	var mes = String(message).replace('#val', tValue);
+					    	mes = mes.replace('#x', returnValue);
 					    	mes = mes.replace('#total', tTotal);
 					    	mes = mes.replace('#percent', pieData[slice]['percent']);
 					    	if (obj.onClick !== undefined) {

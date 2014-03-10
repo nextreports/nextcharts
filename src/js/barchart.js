@@ -5,7 +5,7 @@
  *     For bar and stackedbar we can have combo line series specified by lineData, lineColor and lineLegend
  * style -> normal, glass, cylinder, dome, parallelepiped
  * labelOrientation -> horizontal, vertical, diagonal, halfdiagonal
- * message -> can have two markups #val for value and #total for total value (stackedbar)
+ * message -> can have two markups #val for value, #total for total value (stackedbar) , #x for x label
  *         -> can contain <br> to split text on more lines
  * title.alignment -> center, left, right
  * onClick -> is a javascript function like 'function doClick(value){ ...}'  *            
@@ -460,7 +460,8 @@ function drawData(withFill, withClick, mousePos) {
 			        }
 	    		} else {
 			    	var mes = String(message).replace('#val', tValue);
-				    var mes = mes.replace('#total', maxSum[i]);
+			    	mes = mes.replace('#x', returnValue);
+				    mes = mes.replace('#total', maxSum[i]);
 				    if (obj.onClick !== undefined) {
 				    	canvas.style.cursor = 'pointer';
 				    }
@@ -541,6 +542,7 @@ function drawData(withFill, withClick, mousePos) {
 			    		} else {
 			    			var lineMessage = "#val";
 					    	var mes = String(lineMessage).replace('#val', tValue);
+					    	mes = mes.replace('#x', returnValue);
 					    	if (obj.onClick !== undefined) {
 					    		canvas.style.cursor = 'pointer';
 					    	}
