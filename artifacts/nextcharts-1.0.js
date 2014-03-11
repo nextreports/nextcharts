@@ -231,6 +231,7 @@ var handleMouseEvent = {
     if (lines.length == 1) {   
     	// a single line of text (do not need to modify tipCanvas height)
         tipCanvas.width = textWidth + 20;
+        tipCanvas.height = 25;
         x = tipCanvas.width/2 - textWidth/2;         
         tipCtx.fillText(this.tooltip, x, 15);
     } else {
@@ -407,7 +408,7 @@ function find(array, v) {
  *     For bar and stackedbar we can have combo line series specified by lineData, lineColor and lineLegend
  * style -> normal, glass, cylinder, dome, parallelepiped
  * labelOrientation -> horizontal, vertical, diagonal, halfdiagonal
- * message -> can have two markups #val for value and #total for total value (stackedbar)
+ * message -> can have two markups #val for value, #total for total value (stackedbar) , #x for x label
  *         -> can contain <br> to split text on more lines
  * title.alignment -> center, left, right
  * onClick -> is a javascript function like 'function doClick(value){ ...}'  *            
@@ -862,7 +863,8 @@ function drawData(withFill, withClick, mousePos) {
 			        }
 	    		} else {
 			    	var mes = String(message).replace('#val', tValue);
-				    var mes = mes.replace('#total', maxSum[i]);
+			    	mes = mes.replace('#x', returnValue);
+				    mes = mes.replace('#total', maxSum[i]);
 				    if (obj.onClick !== undefined) {
 				    	canvas.style.cursor = 'pointer';
 				    }
@@ -943,6 +945,7 @@ function drawData(withFill, withClick, mousePos) {
 			    		} else {
 			    			var lineMessage = "#val";
 					    	var mes = String(lineMessage).replace('#val', tValue);
+					    	mes = mes.replace('#x', returnValue);
 					    	if (obj.onClick !== undefined) {
 					    		canvas.style.cursor = 'pointer';
 					    	}
@@ -2006,7 +2009,7 @@ drawBar(myjson, idCan, idTipCan, canWidth, canHeight);
  * type -> line, area
  * style -> normal, soliddot, hollowdot, anchordot, bowdot, stardot
  * labelOrientation -> horizontal, vertical, diagonal, halfdiagonal
- * message -> can have markup #val for value
+ * message -> can have markup #val for value, , #x for x label
  *         -> can contain <br> to split text on more lines
  * title.alignment -> center, left, right
  * onClick -> is a javascript function like 'function doClick(value){ ...}'  *            
@@ -2381,6 +2384,7 @@ function drawData(withFill, withClick, mousePos) {
 	    			return returnValue;
 	    		} else {
 			    	var mes = String(message).replace('#val', tValue);	
+			    	mes = mes.replace('#x', returnValue);
 			    	if (obj.onClick !== undefined) {
 			    		canvas.style.cursor = 'pointer';
 			    	}
@@ -3019,7 +3023,7 @@ function drawLineElements(c, chartStyle, chartType, dotRadius, seriesColor, dots
  * Json must contain as mandatory only "data" attribute 
  * 
  * type -> piechart
- * message -> can have two markups #val for value, #percent for percent and #total for total value
+ * message -> can have two markups #val for value, #percent for percent, #total for total value, #x for x label
  *         -> can contain <br> to split text on more lines
  * title.alignment -> center, left, right
  * onClick -> is a javascript function like 'function doClick(value){ ...}'  *            
@@ -3301,6 +3305,7 @@ function drawData(withFill, withClick, mousePos) {
 			    			return returnValue;
 			    		} else {
 					    	var mes = String(message).replace('#val', tValue);
+					    	mes = mes.replace('#x', returnValue);
 					    	mes = mes.replace('#total', tTotal);
 					    	mes = mes.replace('#percent', pieData[slice]['percent']);
 					    	if (obj.onClick !== undefined) {
