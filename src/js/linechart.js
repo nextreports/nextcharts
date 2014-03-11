@@ -4,6 +4,7 @@
  * type -> line, area
  * style -> normal, soliddot, hollowdot, anchordot, bowdot, stardot
  * labelOrientation -> horizontal, vertical, diagonal, halfdiagonal
+ * showLabels -> true means X labels are shown on X axis; we can use false if we want to show them in message tooltip with #x
  * message -> can have markup #val for value, , #x for x label
  *         -> can contain <br> to split text on more lines
  * title.alignment -> center, left, right
@@ -22,6 +23,7 @@
  *   "colorYaxis": "blue",
  *   "showGridX": true, 
  *   "showGridY": true, 
+ *   "showLabels": true,
  *   "colorGridX": "rgb(248, 248, 216)", 
  *   "colorGridY": "rgb(248, 248, 216)", 
  *   "message" : "Value \: #val", 
@@ -90,6 +92,7 @@ var labelOrientation;
 var globalAlpha;
 var showGridX;
 var showGridY;
+var showLabels;
 var background;
 var message;
 var tickCount;
@@ -190,6 +193,11 @@ function drawLine(myjson, idCan, idTipCan, canWidth, canHeight) {
 	showGridY = obj.showGridY;
 	if (typeof showGridY === "undefined") {
         showGridY = true;
+    }
+	
+	showLabels = obj.showLabels;
+	if (typeof showLabels === "undefined") {
+        showLabels = true;
     }
 	
 	message = obj.message;
@@ -578,45 +586,47 @@ function drawLabels(xLabelWidth) {
 	}
 
 	//draw X labels 
-	c.fillStyle = "black"; 
-	if (obj.xData !== undefined) {
-		c.fillStyle = obj.xData.color; 
-		var b = " ";
-		var xfont = obj.xData.font;
-		c.font = xfont.weight + b + xfont.size + "px" + b + xfont.family;  
-	}		
-	for(var i=0; i<labels.length; i++) {   
-	    var middleX = hStep + i*(realWidth-hStep )/data.length + (realWidth - hStep - gap*(1+Math.sqrt(series)))/data.length/2;
-	    		
-		var xLabelSpace = computeXLabelSpace(labels[i]);
-		if (labelOrientation == "vertical") {
-		   	c.save();	    	
-		   	c.translate(middleX  - c.measureText(labels[i]).width / 2, realHeight-step/2-xLegendSpace/2);
-		   	c.rotate(-Math.PI/2);
-		   	c.textAlign = "center";	    	 
-		   	c.fillText(labels[i],0, c.measureText(labels[i]).width / 2 + 6 );
-		   	c.restore();
-		} else if (labelOrientation == "diagonal") {
-		  	c.save();	    	
-		   	c.translate(middleX  - c.measureText(labels[i]).width / 2, realHeight-step/2-xLegendSpace/2-5);
-		   	c.rotate(-Math.PI/4);
-		   	c.textAlign = "center";	    	 
-		   	c.fillText(labels[i],0, 16);
-		   	c.restore();	
-		} else if (labelOrientation == "halfdiagonal") {
-		    c.save();	    	
-		    c.translate(middleX  - c.measureText(labels[i]).width / 2, realHeight-step + 10);
-		    c.rotate(-Math.PI/8);
-		    c.textAlign = "center";	    	 
-		    c.fillText(labels[i],0, 16);
-		    c.restore();		
-		} else {
-		   	// horizontal
-		   	c.fillText(labels[i],middleX  - c.measureText(labels[i]).width / 2, realHeight-step/2-xLegendSpace/4);
-		}
-		
-	}  
-	c.font = font;
+	if (showLabels) {
+		c.fillStyle = "black"; 
+		if (obj.xData !== undefined) {
+			c.fillStyle = obj.xData.color; 
+			var b = " ";
+			var xfont = obj.xData.font;
+			c.font = xfont.weight + b + xfont.size + "px" + b + xfont.family;  
+		}		
+		for(var i=0; i<labels.length; i++) {   
+		    var middleX = hStep + i*(realWidth-hStep )/data.length + (realWidth - hStep - gap*(1+Math.sqrt(series)))/data.length/2;
+		    		
+			var xLabelSpace = computeXLabelSpace(labels[i]);
+			if (labelOrientation == "vertical") {
+			   	c.save();	    	
+			   	c.translate(middleX  - c.measureText(labels[i]).width / 2, realHeight-step/2-xLegendSpace/2);
+			   	c.rotate(-Math.PI/2);
+			   	c.textAlign = "center";	    	 
+			   	c.fillText(labels[i],0, c.measureText(labels[i]).width / 2 + 6 );
+			   	c.restore();
+			} else if (labelOrientation == "diagonal") {
+			  	c.save();	    	
+			   	c.translate(middleX  - c.measureText(labels[i]).width / 2, realHeight-step/2-xLegendSpace/2-5);
+			   	c.rotate(-Math.PI/4);
+			   	c.textAlign = "center";	    	 
+			   	c.fillText(labels[i],0, 16);
+			   	c.restore();	
+			} else if (labelOrientation == "halfdiagonal") {
+			    c.save();	    	
+			    c.translate(middleX  - c.measureText(labels[i]).width / 2, realHeight-step + 10);
+			    c.rotate(-Math.PI/8);
+			    c.textAlign = "center";	    	 
+			    c.fillText(labels[i],0, 16);
+			    c.restore();		
+			} else {
+			   	// horizontal
+			   	c.fillText(labels[i],middleX  - c.measureText(labels[i]).width / 2, realHeight-step/2-xLegendSpace/4);
+			}
+			
+		}  
+		c.font = font;
+	}
 	
 }
 
@@ -769,12 +779,14 @@ function computeVStep() {
 		var b = " ";
 		c.font = xfont.weight + b + xfont.size + "px" + b + xfont.family;  		
 	}
-	for(var i=0; i<labels.length; i++) {            
-	    var labelWidth = computeXLabelSpace(labels[i]);
-	    if (labelWidth > xLabelWidth) {
-	        xLabelWidth = labelWidth;
-	    }   
-	} 
+	if (showLabels) {
+		for(var i=0; i<labels.length; i++) {            
+		    var labelWidth = computeXLabelSpace(labels[i]);
+		    if (labelWidth > xLabelWidth) {
+		        xLabelWidth = labelWidth;
+		    }   
+		} 
+	}
 	var _xLegendSpace = 0;
 	if (typeof obj.xLegend !== "undefined") {				
 		var f = obj.xLegend.font;

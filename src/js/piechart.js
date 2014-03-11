@@ -4,16 +4,18 @@
  * type -> piechart
  * message -> can have two markups #val for value, #percent for percent, #total for total value, #x for x label
  *         -> can contain <br> to split text on more lines
+ * showLabels -> true means labels are shown on pie with lines; we can use false if we want to show them in message tooltip with #x        
  * title.alignment -> center, left, right
  * onClick -> is a javascript function like 'function doClick(value){ ...}'  *            
  * 
- * { "type": "pie",  *   
+ * { "type": "pie",     
  *   "background" : "white",
  * 	 "data": [[ 16, 66, 24, 30, 80, 52 ]], 
  *   "labels": ["JANUARY","FEBRUARY","MARCH","APRIL","MAY", "JUNE"],     
  *   "color": ["#004CB3","#A04CB3", "#7aa37a", "#f18e9f", "#90e269", "#bc987b"],   
- *   "alpha" : 0.8,  *    
- *   "message" : "Value \: #val",  *    
+ *   "alpha" : 0.8,
+ *   "showLabels": true,    
+ *   "message" : "Value \: #val",     
  *   "title" : {
  *   	"text": "Analiza financiara", 
  *   	"font": {
@@ -48,6 +50,7 @@ var obj;
 var data;
 var labels; 
 var globalAlpha;
+var showLabels;
 var background;
 var message;
 var chartType;
@@ -96,6 +99,11 @@ function drawPie(myjson, idCan, idTipCan, canWidth, canHeight) {
 	globalAlpha = obj.alpha;
 	if (typeof globalAlpha === "undefined") {
         globalAlpha = 0.8;
+    }
+	
+	showLabels = obj.showLabels;
+	if (typeof showLabels === "undefined") {
+        showLabels = true;
     }
 			
 	message = obj.message;
@@ -194,8 +202,15 @@ function drawData(withFill, withClick, mousePos) {
 	var stop = true;	
 	
 	var pieData = [];
-	var cx = realWidth-2*getMaxLabelWidth()-2*line-20;
-	var cy = realHeight-titleSpace-getLabelHeight()-2*line-20;
+	var cx;
+	var cy;
+	if (showLabels) {
+		cx = realWidth-2*getMaxLabelWidth()-2*line-20;
+		cy = realHeight-titleSpace-getLabelHeight()-2*line-20;
+	} else {
+		cx = realWidth-2*line-20;
+		cy = realHeight-titleSpace-2*line-20;
+	}
 	var center = [realWidth / 2, (realHeight+titleSpace) / 2];	
 	var radius = Math.min(cx, cy) / 2;
 	if (radius < 0) {
@@ -311,54 +326,57 @@ function drawData(withFill, withClick, mousePos) {
 }
 
 function drawLabels(i, pieData) {
-	var x = pieData[i]['middle'][0];
-	var y = pieData[i]['middle'][1];
-	var x1 = pieData[i]['labelpos'][0];
-	var y1 = pieData[i]['labelpos'][1];	
 	
-	c.beginPath();
-	c.moveTo(x, y);
-	c.lineTo(x1, y1);
-	
-	var writeFrom = true;	
-	if ((pieData[i]['labelAngle'] == Math.PI) || (pieData[i]['labelAngle'] == 2*Math.PI)) {
-		// no horizontal line to draw	
-		if ((pieData[i]['labelAngle'] == Math.PI) || (pieData.length == 1)) {
-			writeFrom = false;
-		}
-	} else if (pieData[i]['labelAngle'] <= Math.PI/2) {		
-		x1 = x1+hline;				
-	} else if (pieData[i]['labelAngle'] < Math.PI) {
-		x1 = x1-hline;
-		writeFrom = false;
-	} else if (pieData[i]['labelAngle'] <= 3*Math.PI/2) {
-		x1 = x1-hline;
-		writeFrom = false;
-	} else if (pieData[i]['labelAngle'] < 2*Math.PI) {
-		x1 = x1+hline;
-	}
-	c.lineTo(x1, y1);	
-	
-	c.strokeStyle = seriesColor[i];
-	c.stroke();
-	
-	c.fillStyle = seriesColor[i];
-	var fontHeight = 12;
-	if (obj.xData !== undefined) {
-		//c.fillStyle = obj.xData.color; 
-		var b = " ";
-		var xfont = obj.xData.font;
-		fontHeight = xfont.size;
-		c.font = xfont.weight + b + xfont.size + "px" + b + xfont.family;  
-	} else {		
-		c.font = "bold 12px sans-serif";
-	}	   			
+	if (showLabels) {
+		var x = pieData[i]['middle'][0];
+		var y = pieData[i]['middle'][1];
+		var x1 = pieData[i]['labelpos'][0];
+		var y1 = pieData[i]['labelpos'][1];	
 		
-	if (writeFrom) {
-		c.fillText(labels[i],x1+5, y1 + fontHeight/2);
-	} else {
-		var size = c.measureText(labels[i]).width+5;
-		c.fillText(labels[i],x1-size, y1 + fontHeight/2);
+		c.beginPath();
+		c.moveTo(x, y);
+		c.lineTo(x1, y1);
+		
+		var writeFrom = true;	
+		if ((pieData[i]['labelAngle'] == Math.PI) || (pieData[i]['labelAngle'] == 2*Math.PI)) {
+			// no horizontal line to draw	
+			if ((pieData[i]['labelAngle'] == Math.PI) || (pieData.length == 1)) {
+				writeFrom = false;
+			}
+		} else if (pieData[i]['labelAngle'] <= Math.PI/2) {		
+			x1 = x1+hline;				
+		} else if (pieData[i]['labelAngle'] < Math.PI) {
+			x1 = x1-hline;
+			writeFrom = false;
+		} else if (pieData[i]['labelAngle'] <= 3*Math.PI/2) {
+			x1 = x1-hline;
+			writeFrom = false;
+		} else if (pieData[i]['labelAngle'] < 2*Math.PI) {
+			x1 = x1+hline;
+		}
+		c.lineTo(x1, y1);	
+		
+		c.strokeStyle = seriesColor[i];
+		c.stroke();
+		
+		c.fillStyle = seriesColor[i];
+		var fontHeight = 12;
+		if (obj.xData !== undefined) {
+			//c.fillStyle = obj.xData.color; 
+			var b = " ";
+			var xfont = obj.xData.font;
+			fontHeight = xfont.size;
+			c.font = xfont.weight + b + xfont.size + "px" + b + xfont.family;  
+		} else {		
+			c.font = "bold 12px sans-serif";
+		}	   			
+			
+		if (writeFrom) {
+			c.fillText(labels[i],x1+5, y1 + fontHeight/2);
+		} else {
+			var size = c.measureText(labels[i]).width+5;
+			c.fillText(labels[i],x1-size, y1 + fontHeight/2);
+		}
 	}
 }
 
