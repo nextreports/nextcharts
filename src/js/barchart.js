@@ -1461,6 +1461,13 @@ function computeHStep() {
 	
 	// take care for halfdiagonal, diagonal long labels
 	// if they are too long hStep must be increased accordingly
+	var cf = c.font;
+	if (obj.xData !== undefined) {		
+		var b = " ";
+		var xfont = obj.xData.font;
+		c.font = xfont.weight + b + xfont.size + "px" + b + xfont.family;  
+	}		
+	var minPos = new Array();
 	for(var i=0; i<labels.length; i++) {
 		if (isH(chartType)) {    				    	
 	    	realWidth = canvas.height - result/2;
@@ -1482,16 +1489,16 @@ function computeHStep() {
 	    } 
 		if (angle !== undefined) {
 			var len = middleX - c.measureText(labels[i]).width * Math.cos(angle);
-	    	if (len < 0) {
-	    		if (Math.abs(len) > result) {
-		    		result += 40;
-		    	}
-	    		result += (result - len);	    			    		
-	    	} else if (len < result) {
-	    		result += (result - len);
-	    	}	    
-		}
+			minPos.push(len);				    	
+		}		
+	}		
+	var len = Math.min.apply( Math, minPos );
+	if (minPos.length > 0) {			
+    	if (len < 10) {
+    		result += (10 - len);
+    	}	 
 	}
+	    
 	
 	return result;
 }
