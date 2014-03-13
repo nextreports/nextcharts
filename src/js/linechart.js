@@ -607,14 +607,14 @@ function drawLabels(xLabelWidth) {
 			   	c.restore();
 			} else if (labelOrientation == "diagonal") {
 			  	c.save();	    	
-			   	c.translate(middleX  - c.measureText(labels[i]).width / 2, realHeight-step/2-xLegendSpace/2-5);
+			  	c.translate(middleX  - (c.measureText(labels[i]).width / 2)* Math.cos(Math.PI/4), realHeight-step + (c.measureText(labels[i]).width / 2)* Math.sin(Math.PI/4));
 			   	c.rotate(-Math.PI/4);
 			   	c.textAlign = "center";	    	 
 			   	c.fillText(labels[i],0, 16);
 			   	c.restore();	
 			} else if (labelOrientation == "halfdiagonal") {
 			    c.save();	    	
-			    c.translate(middleX  - c.measureText(labels[i]).width / 2, realHeight-step + 10);
+			    c.translate(middleX  - (c.measureText(labels[i]).width / 2)* Math.cos(Math.PI/8), realHeight-step + (c.measureText(labels[i]).width / 2)* Math.sin(Math.PI/8));
 			    c.rotate(-Math.PI/8);
 			    c.textAlign = "center";	    	 
 			    c.fillText(labels[i],0, 16);
@@ -766,7 +766,31 @@ function computeHStep() {
 		yLegendSpace = +20 + +f.size;		    
 		c.font = font;            
 		result += yLegendSpace;
-	} 	
+	}
+	
+	// take care for halfdiagonal, diagonal long labels
+	// if they are too long hStep must be increased accordingly
+	for(var i=0; i<labels.length; i++) {		
+		realWidth = canvas.width;		
+		var middleX = result + i*(realWidth-result )/data.length + (realWidth - result - gap*(1+Math.sqrt(series)))/data.length/2;
+		var angle;
+		if (labelOrientation == "diagonal") {
+			angle = Math.PI/4;	    			
+	     } else if (labelOrientation == "halfdiagonal") {		    	
+		    angle = Math.PI/8;		
+	    } 
+		if (angle !== undefined) {
+			var len = middleX - c.measureText(labels[i]).width * Math.cos(angle);
+	    	if (len < 0) {
+	    		if (Math.abs(len) > result) {
+		    		result += 40;
+		    	}
+	    		result += (result - len);	    			    		
+	    	} else if (len < result) {
+	    		result += (result - len);
+	    	}	    
+		}
+	}
 	return result;
 }
 
