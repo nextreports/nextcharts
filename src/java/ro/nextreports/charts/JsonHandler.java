@@ -163,7 +163,7 @@ public class JsonHandler extends AbstractHandler {
 			" \"colorGridY\":\"rgb(0,198,189)\"," + 
 	        " \"message\":\"#label<br>Life Expectancy: #x<br>Fertility Rate: #val<br>Region: #c<br>Population: #z\"," + 
 	        " \"tickCount\":4, " +
-			" \"title\":{\"text\":\"Correlation\", \"font\":{\"weight\":\"bold\", \"size\":14, \"family\":\"sans-serif\"}, \"color\":\"blue\", \"alignment\":\"center\"}," +
+			" \"title\":{\"text\":\"Population Correlation\", \"font\":{\"weight\":\"bold\", \"size\":14, \"family\":\"sans-serif\"}, \"color\":\"blue\", \"alignment\":\"center\"}," +
 	        " \"labelOrientation\":\"horizontal\"," +			        
 	        " \"type\":\"bubble\"," +
 	        " \"style\":\"normal\"," +
