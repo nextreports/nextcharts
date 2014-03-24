@@ -3717,16 +3717,18 @@ drawPie(myjson, idCan, idTipCan, canWidth, canHeight);
  * title.alignment -> center, left, right
  * onClick -> is a javascript function like 'function doClick(value){ ...}' 
  * 
- * data contains : x, y, z and category arrays  
+ * data contains : x, y, z 
  * labels contains ids array (as an exception of other charts, we will not draw them on X axis, but other labels obtained as X ticks from x data)
+ * categories contains  categories array 
  * color contains colors only for distinct categories      
- * legend must be computed from categories      
+ * legend must be computed from categories (unique categories)      
  * 
  * { "type": "bubble"
  *   "style": "normal",
  *   "background" : "white",
- * 	 "data": [[80.66,79.84,78.6,72.73,80.05,72.49,68.09,81.55,68.6,78.09], [ 1.67, 1.36, 1.84, 2.78, 2, 1.7, 4.77, 2.96, 1.54, 2.05 ], [ 33739900, 81902307, 5523095, 79716203, 61801570, 73137148, 31090763, 7485600, 141850000, 307007000 ], [ "North America", "Europe", "Europe", "Middle East", "Europe", "Middle East", "Middle East", "Middle East", "Europe", "North America" ]], 
+ * 	 "data": [[80.66,79.84,78.6,72.73,80.05,72.49,68.09,81.55,68.6,78.09], [ 1.67, 1.36, 1.84, 2.78, 2, 1.7, 4.77, 2.96, 1.54, 2.05 ], [ 33739900, 81902307, 5523095, 79716203, 61801570, 73137148, 31090763, 7485600, 141850000, 307007000 ] ], 
  *   "labels": ["CAN", "DEU", "DNK", "EGY", "GBN", "IRN", "IRQ", "ISR", "RUS", "USA"],
+ *   "categories": [ "North America", "Europe", "Europe", "Middle East", "Europe", "Middle East", "Middle East", "Middle East", "Europe", "North America" ]
  *   "labelOrientation": "horizontal",  
  *   "color": ["#004CB3","#A04CB3", "#7aa37a"], 
  *   "alpha" : 0.8, 
@@ -3813,7 +3815,7 @@ var chartStyle;
 var seriesColor;
 var xData, yData;
 var series;
-var categories = new Array();
+var uniqueCategories = new Array();
 var yStep;
 var dotsK = new Array();
 var max;
@@ -3869,15 +3871,15 @@ function drawBubble(myjson, idCan, idTipCan, canWidth, canHeight) {
 	}	
 	
 	data = obj.data[0];
-	for (var i=0;i<obj.data[3].length;i++){
-		var cat = obj.data[3][i];
-		if (find(categories,cat) === false) {
-			categories.push(cat);
+	for (var i=0;i<obj.categories.length;i++){
+		var cat = obj.categories[i];
+		if (find(uniqueCategories,cat) === false) {
+			uniqueCategories.push(cat);
 		}
 		H.push(6);
 	}
-	obj.legend = categories;
-	series = categories.length;		
+	obj.legend = uniqueCategories;
+	series = uniqueCategories.length;		
 	
 	labelOrientation = obj.labelOrientation;
 	if (typeof labelOrientation === "undefined") {
@@ -4023,7 +4025,7 @@ function animDraw() {
     if (drawIt(H)) {          		    
         return false;
     }    
-    for (var i=0;i<obj.data[3].length;i++){
+    for (var i=0;i<obj.categories.length;i++){
     	H[i] += 1+(realHeight-step-titleSpace-legendSpace)/30;
     }
     window.requestAnimFrame(animDraw);      
@@ -4134,7 +4136,7 @@ function drawData(withFill, withClick, mousePos) {
 			    	var mes = String(message).replace('#val', tValue);	
 			    	mes = mes.replace('#x', returnValue);
 			    	mes = mes.replace('#z', obj.data[2][i]);
-			    	mes = mes.replace('#c', obj.data[3][i]);
+			    	mes = mes.replace('#c', obj.categories[i]);
 			    	mes = mes.replace('#label', obj.labels[i]);
 			    	if (obj.onClick !== undefined) {
 			    		canvas.style.cursor = 'pointer';
@@ -4170,8 +4172,8 @@ function getYValue(i, maxValY, yStep) {
 }
 
 function getSeriesColor(i) {
-	var cat = obj.data[3][i];
-	var ind = find(categories,cat);
+	var cat = obj.categories[i];
+	var ind = find(uniqueCategories,cat);
 	if (ind === false) {
 		return "white";
 	}
