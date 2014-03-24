@@ -151,6 +151,27 @@ public class JsonHandler extends AbstractHandler {
 	         " \"xData\":{\"font\":{\"weight\":\"bold\",\"size\":16,\"family\":\"sans-serif\"}, \"color\":\"blue\"}," +
 	         " \"type\":\"pie\"" +	         
 	         "}";
+	
+	private String jsonBubble = 
+			"{\"data\":[[80.66,79.84,78.6,72.73,80.05,72.49,68.09,81.55,68.6,78.09],[1.67,1.36,1.84,2.78,2,1.7,4.77,2.96,1.54,2.05],[33739900,81902307,5523095,79716203,61801570,73137148,31090763,7485600,141850000,307007000],[\"North America\",\"Europe\",\"Europe\",\"Middle East\",\"Europe\",\"Middle East\",\"Middle East\",\"Middle East\",\"Europe\",\"North America\"]]," + 	    
+	        " \"labels\":[\"CAN\",\"DEU\",\"DNK\",\"EGY\",\"GBN\",\"IRN\",\"IRQ\",\"ISR\",\"RUS\",\"USA\"]," + 
+			" \"color\":[\"#004CB3\",\"#A04CB3\",\"#7aa37a\"]," +	        	        	        
+			" \"alpha\":0.6," + 
+			" \"showGridX\":true," + 
+			" \"showGridY\":true," +			 
+			" \"colorGridX\":\"rgb(0,198,189)\"," + 
+			" \"colorGridY\":\"rgb(0,198,189)\"," + 
+	        " \"message\":\"#label<br>Life Expectancy: #x<br>Fertility Rate: #val<br>Region: #c<br>Population: #z\"," + 
+	        " \"tickCount\":4, " +
+			" \"title\":{\"text\":\"Correlation\", \"font\":{\"weight\":\"bold\", \"size\":14, \"family\":\"sans-serif\"}, \"color\":\"blue\", \"alignment\":\"center\"}," +
+	        " \"labelOrientation\":\"horizontal\"," +			        
+	        " \"type\":\"bubble\"," +
+	        " \"style\":\"normal\"," +
+	        " \"yData\":{\"font\":{\"weight\":\"bold\",\"size\":14,\"family\":\"sans-serif\"}, \"color\":\"blue\"}," +
+	        " \"xData\":{\"font\":{\"weight\":\"bold\",\"size\":14,\"family\":\"sans-serif\"}, \"color\":\"blue\"}," +
+	        " \"yLegend\":{\"text\":\"Fertility Rate\",\"font\":{\"weight\":\"bold\",\"size\":14,\"family\":\"sans-serif\"}, \"color\":\"#993366\"}," +
+	        " \"xLegend\":{\"text\":\"Life Expectancy\",\"font\":{\"weight\":\"bold\",\"size\":14,\"family\":\"sans-serif\"}, \"color\":\"#993366\"}" +
+	        "}";    
 						
 	public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
 			throws IOException, ServletException {
@@ -170,6 +191,8 @@ public class JsonHandler extends AbstractHandler {
 			response.getWriter().println(jsonLine);
 		} else if (type.equals("pie")) {
 			response.getWriter().println(jsonPie);
+		} else if (type.equals("bubble")) {
+			response.getWriter().println(jsonBubble);	
 		} else {
 			response.getWriter().println(jsonStackLine);
 		}					

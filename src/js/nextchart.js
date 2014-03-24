@@ -21,6 +21,8 @@ function nextChart(myjson, idCan, idTipCan, canWidth, canHeight) {
 		barChart(myjson, idCan, idTipCan, canWidth, canHeight);
 	} else if (isPie(chartType)) {
 		pieChart(myjson, idCan, idTipCan, canWidth, canHeight);	
+	} else if (isBubble(chartType)) {
+		bubbleChart(myjson, idCan, idTipCan, canWidth, canHeight);		
 	} else {
 		lineChart(myjson, idCan, idTipCan, canWidth, canHeight);
 	}		
@@ -36,4 +38,8 @@ function isLine(chartType) {
 
 function isPie(chartType) {
 	return (chartType == "pie");
+}
+
+function isBubble(chartType) {
+	return (chartType == "bubble");
 }

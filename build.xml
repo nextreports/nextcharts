@@ -1,6 +1,6 @@
 <project name="nextreports-charts">
     
-    <property name="version" value="1.0"/>
+    <property name="version" value="1.1"/>
     <property name="jsdir" value="./src/js"/>
     <property name="target" value="artifacts"/>
     <property name="nextreports-charts-file" value="nextcharts-${version}.js"/>
@@ -13,6 +13,7 @@
 	       <file name="barchart.js" />
 	       <file name="linechart.js" />
 	       <file name="piechart.js" />
+	       <file name="bubblechart.js" />
 	       <file name="nextchart.js" />
 	    </filelist>
 	    
