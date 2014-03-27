@@ -364,19 +364,17 @@ function drawData(withFill, withClick, mousePos) {
 	var my = (yn - y0) / (lyn - ly0);
 	var ny = (y0*lyn - yn*ly0) / (lyn - ly0); 		
 	var maxRadius = tickStep*tickCount/4;	
-	var maxZ = Math.max.apply( Math, obj.data[2]);
-		
-	var radius = new Array();
-	for (var i=0; i<data.length; i++) {
-						
-		var dataX = hStep + (obj.data[0][i] - nx) / mx;
+	var maxZ = Math.max.apply( Math, obj.data[2]);	
+				
+	var radius = new Array();	
+	for (var i=0; i<data.length; i++) {						
+		var dataX = hStep + (obj.data[0][i] - nx) / mx + gap/2 - c.measureText("0").width / 2 -yLegendSpace/4;		  
 		var dataY = (obj.data[1][i] - ny) / my;		
 		radius[i] = obj.data[2][i]*(maxRadius/maxZ)*2/Math.PI+4;
 		if (radius[i] < 3) {
 			radius[i] = 3;
 		}
-		//console.log("i=" + i + "  val="+obj.data[2][i] + "  maxRadius=" + maxRadius + "   maxZ="+maxZ + "  radius="+radius);
-		
+			
 		if (radius[i] < H[i]) {
 	        H[i] = radius[i];
 	        var test = false;
