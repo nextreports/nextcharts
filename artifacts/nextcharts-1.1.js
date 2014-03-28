@@ -3913,7 +3913,7 @@ function drawBubble(myjson, idCan, idTipCan, canWidth, canHeight) {
 	
 	message = obj.message;
 	if (typeof message === "undefined") {		
-		message = "#val";		
+		message = "#label<br>X: #x<br>Y: #val<br>Z: #z<br>Series: #c";		
 	}
 	
 	tickCount = obj.tickCount;
