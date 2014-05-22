@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>NextReports Widgets</title>
+
+<style type="text/css">
+   
+   body, html {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+   }
+
+  .canvas {
+  	border: 1px solid gray;
+  	margin: 2px;
+  }
+</style>
+
+
+<script type="text/javascript" src="../js/jquery-1.10.2.min.js"></script>
+
+<!-- You should add just the nextcharts.min.js instead of all following js files -->
+<script type="text/javascript" src="../js/color-util.js"></script> 
+<script type="text/javascript" src="../js/chart-util.js"></script> 
+<script type="text/javascript" src="../js/indicator.js"></script>
+<script type="text/javascript" src="../js/nextwidget.js"></script>
+<script>
+	
+	var background = "white"; 
+	var jsons = new Array();
+	var types = new Array();
+	createJsons();			
+	var count = jsons.length;
+	
+	$(document).ready(function() {		
+		addCanvases();		
+		drawWidgets();		
+	});
+					
+	// dynamically create canvas tags
+	function addCanvases() {
+		  var body = document.getElementsByTagName("body")[0] ;		 
+		  for(var i=0; i<count; i++) { 				  
+		  	var newCanvas = document.createElement('canvas');
+		  	newCanvas.setAttribute('id','canvas'+(i+1));
+		  	newCanvas.setAttribute('width','500');
+		  	newCanvas.setAttribute('height','300');
+		  	newCanvas.setAttribute('class','canvas');		  
+		  	body.appendChild(newCanvas);		  			
+		  }
+	}
+	
+	// draw next widgets
+	function drawWidgets() {
+		for(var i=0; i<count; i++) {
+			var type = types[i];
+			var id = jsons[i].id;
+			var data = JSON.parse(jsons[i].json);	
+			nextWidget(type, data, 'canvas'+id, false);						
+		}		
+	}
+	
+	// create test jsons
+	function createJsons() {
+		
+		types.push("indicator");
+		jsons.push({id:"1", json:"{\"title\": \"Balance\"," + 
+	        " \"description\":\"monthly\"," + 
+	        " \"unit\":\"$\"," +
+			" \"value\":200," +
+	        " \"min\":0," +
+			" \"max\":1000," + 
+			" \"showMinMax\":true," + 			 			
+	        " \"color\":\"blue\"" + 	        
+	        "}"});	
+		
+	}
+	
+</script>
+</head>
+<body>	 	   
+</body>
+</html>
