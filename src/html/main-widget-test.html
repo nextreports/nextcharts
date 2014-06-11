@@ -28,6 +28,7 @@
 <script type="text/javascript" src="../js/chart-util.js"></script> 
 <script type="text/javascript" src="../js/indicator.js"></script>
 <script type="text/javascript" src="../js/display.js"></script>
+<script type="text/javascript" src="../js/alarm.js"></script>
 <script type="text/javascript" src="../js/nextwidget.js"></script>
 <script>
 	
@@ -76,7 +77,8 @@
 	        " \"min\":0," +
 			" \"max\":1000," + 
 			" \"showMinMax\":true," + 			 			
-	        " \"color\":\"blue\"" + 	        
+	        " \"color\":\"blue\"," +
+	        " \"shadow\":true" +
 	        "}"});	
 		
 		types.push("display");
@@ -119,19 +121,13 @@
 			" \"background\":\"white\"," +
 			" \"shadow\":true" +
 	        "}"});	
-		
-		types.push("display");
-		jsons.push({id:"6", json:"{\"value\": \"4\"," +
-			" \"valueColor\":\"#0000ff\"," +
-			" \"title\":\"Id\"," +
-			" \"titleColor\":\"#000000\"," +
-			" \"previous\":\"75\"," +
-			" \"previousColor\":\"#c0c0c0\"," +			
-			" \"up\":true," +
-			" \"shouldRise\":true," +
+			
+		types.push("alarm");
+		jsons.push({id:"6", json:"{\"text\": \"Project delay is imminent! (Only 42 hours worked)\"," +
+			" \"color\":\"red\"," +			
 			" \"background\":\"#ffffff\"," +
 			" \"shadow\":true" +
-	        "}"});			
+	        "}"});		
 		
 	}
 	

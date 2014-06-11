@@ -4,5 +4,7 @@ function nextWidget(type, myjson, id, zoom) {
 		indicator(id, myjson, zoom);
 	} else if (type == "display") {
 		display(id, myjson, zoom);
+	} else if (type == "alarm") {
+		alarm(id, myjson, zoom);
 	}
 }	
