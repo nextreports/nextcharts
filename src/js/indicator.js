@@ -38,12 +38,19 @@ var getData = function(id, zoom) {
 }
 
 // draw texts: title, description, min, max, value
-var drawText = function(id, title, description, unit, min, max, value, showMinMax, d) {
+var drawText = function(id, title, description, unit, min, max, value, showMinMax, d, shadow) {
   var can = document.getElementById(id);
   var ctx = can.getContext('2d');   
   
   // clear canvas
   ctx.clearRect(0, 0, can.width, can.height);
+  
+  if (shadow) {
+	ctx.shadowColor = "#d1ceb2";
+	ctx.shadowOffsetX = 5; 
+	ctx.shadowOffsetY = 5; 
+	ctx.shadowBlur = 5;
+  }
     
   ctx.fillStyle = "black";
   ctx.font="bold " + d.size/10  + "px Arial";
@@ -69,11 +76,15 @@ var drawText = function(id, title, description, unit, min, max, value, showMinMa
   }  
   ctx.fillStyle = "black";
   ctx.font="bold " + d.size/6 + "px Arial";
-  ctx.fillText(value,d.x-ctx.measureText(value).width/2,d.y );    
+  ctx.fillText(value,d.x-ctx.measureText(value).width/2,d.y );   
+  
+  ctx.shadowBlur = 0;
+  ctx.shadowOffsetX = 0; 
+  ctx.shadowOffsetY = 0; 
 }
 
 // fill component with color
-var drawColor = function(id, angle, color, title, d) {
+var drawColor = function(id, angle, color, title, d, shadow) {
   
    var can = document.getElementById(id);
    var ctx = can.getContext('2d');      
@@ -99,9 +110,18 @@ var drawColor = function(id, angle, color, title, d) {
    ctx.fill();
 
    // draw title again to be over the fill color
+   if (shadow) {
+		ctx.shadowColor = "#d1ceb2";
+		ctx.shadowOffsetX = 5; 
+		ctx.shadowOffsetY = 5; 
+		ctx.shadowBlur = 5;
+   }
    ctx.fillStyle = "black";  
    ctx.font="bold " + d.size/10 + "px Arial";
    ctx.fillText(title,d.x-ctx.measureText(title).width/2,d.y-d.radix+d.arcWidth/2 + d.size/10);
+   ctx.shadowBlur = 0;
+   ctx.shadowOffsetX = 0; 
+   ctx.shadowOffsetY = 0; 
    
 };
 
@@ -120,10 +140,10 @@ var drawArc = function(id, d) {
   ctx.stroke();  
 }
 
-function indicatorP(id, color, title, description, unit, min, max, value, showMinMax, zoom) {	  	
+function indicatorP(id, color, title, description, unit, min, max, value, showMinMax, shadow, zoom) {	  	
 	
     var d = getData(id, zoom);    
-    drawText(id, title, description, unit, min, max, value, showMinMax, d);
+    drawText(id, title, description, unit, min, max, value, showMinMax, d, shadow);
     
     if (value > max) {
         value = max;
@@ -139,7 +159,7 @@ function indicatorP(id, color, title, description, unit, min, max, value, showMi
        $({ n: from }).animate({ n: to}, {
           duration: 1000,    
           step: function(now, fx) {
-             drawColor(id, now*Math.PI/180, color, title, d);       
+             drawColor(id, now*Math.PI/180, color, title, d, shadow);       
           } 
        });  
     }
@@ -201,7 +221,12 @@ function indicator(id, myjson, zoom) {
 		color = "blue";
 	}	
 	
-	indicatorP(id, color, title, description, unit, min, max, value, showMinMax, zoom); 
+	var shadow = myjson.shadow;
+	if (typeof shadow === "undefined") {
+		shadow = false;
+	}	
+	
+	indicatorP(id, color, title, description, unit, min, max, value, showMinMax, shadow, zoom); 
 	
 }
 
