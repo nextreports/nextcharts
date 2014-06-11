@@ -4,6 +4,10 @@ Open source HTML5 charts using the canvas tag. This library is used by [NextRepo
 
 ![alt tag](http://2.bp.blogspot.com/-ouJicYwR4D0/Uv3pAiWORgI/AAAAAAAAJDo/a6RxWpXU3QM/s1600/NextServerCharts-white.png)
 
+A small number of widgets is also contained by this library.
+
+![alt tag](http://2.bp.blogspot.com/-1lSssWLMPOs/U5hWOr0pwWI/AAAAAAAAJf8/Eof9uAbvvm4/s1600/a2.png)
+
 ##Samples
 
 There are some samples (to see how json properties must be specified) in src/html:
