@@ -1,10 +1,10 @@
-function nextWidget(type, myjson, id, zoom) {				
+function nextWidget(type, myjson, id, zoom, useParentWidth) {				
 				
 	if (type == "indicator") {
-		indicator(id, myjson, zoom);
+		indicator(id, myjson, zoom, useParentWidth);
 	} else if (type == "display") {
-		display(id, myjson, zoom);
+		display(id, myjson, zoom, useParentWidth);
 	} else if (type == "alarm") {
-		alarm(id, myjson, zoom);
+		alarm(id, myjson, zoom, useParentWidth);
 	}
 }	

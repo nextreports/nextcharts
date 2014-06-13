@@ -8,6 +8,15 @@ function isCanvasEnabled() {
 }
 
 
+function getParentWidth(id) {
+	return document.getElementById(id).parentNode.offsetWidth;
+}
+
+function getWidth(element) {
+	return element.offsetWidth;
+}
+
+
 function niceNum(range, round) {
     var exponent; /** exponent of range */
     var fraction; /** fractional part of range */

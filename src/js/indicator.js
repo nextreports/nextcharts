@@ -13,13 +13,17 @@ function data(size, radix, arcWidth, x, y) {
 
 // compute a data object from canvas size
 // zoom means full window size
-var getData = function(id, zoom) {
+var getData = function(id, zoom, useParentWidth) {
   var can = document.getElementById(id);
   var ctx = can.getContext('2d');  
     
   if (zoom == true) {	  
 	  can.width = $(window).width();
 	  can.height = $(window).height();	  
+  }
+  
+  if (useParentWidth) {
+	  can.width = can.parentNode.offsetWidth;				
   }
   
   var canWidth = can.width;
@@ -40,7 +44,7 @@ var getData = function(id, zoom) {
 // draw texts: title, description, min, max, value
 var drawText = function(id, title, description, unit, min, max, value, showMinMax, d, shadow) {
   var can = document.getElementById(id);
-  var ctx = can.getContext('2d');   
+  var ctx = can.getContext('2d');      
   
   // clear canvas
   ctx.clearRect(0, 0, can.width, can.height);
@@ -140,31 +144,46 @@ var drawArc = function(id, d) {
   ctx.stroke();  
 }
 
-function indicatorP(id, color, title, description, unit, min, max, value, showMinMax, shadow, zoom) {	  	
+function indicatorP(id, color, title, description, unit, min, max, value, showMinMax, shadow, zoom, useParentWidth) {	  	
 	
-    var d = getData(id, zoom);    
-    drawText(id, title, description, unit, min, max, value, showMinMax, d, shadow);
+	if (useParentWidth) {
+		window.addEventListener('resize', resizeCanvas, false);
+	}
+    draw(true);
     
-    if (value > max) {
-        value = max;
-    }  
-    var range = Math.abs(max - min);
-    var delta = Math.abs(min - value);
-    var f =  (range - delta) /range;
-    var from = 1;
-    var to =  180 * (1-f) ;		
- 
-    if (value > min) {
-       // animate using jQuery
-       $({ n: from }).animate({ n: to}, {
-          duration: 1000,    
-          step: function(now, fx) {
-             drawColor(id, now*Math.PI/180, color, title, d, shadow);       
-          } 
-       });  
+    function draw(animate) {
+    	var d = getData(id, zoom, useParentWidth);    
+	    drawText(id, title, description, unit, min, max, value, showMinMax, d, shadow);
+	    
+	    if (value > max) {
+	        value = max;
+	    }  
+	    var range = Math.abs(max - min);
+	    var delta = Math.abs(min - value);
+	    var f =  (range - delta) /range;
+	    var from = 1;
+	    var to =  180 * (1-f) ;		
+	 
+	    if (value > min) {
+	       // animate using jQuery
+	       if (animate) {	
+		       $({ n: from }).animate({ n: to}, {
+		          duration: 1000,    
+		          step: function(now, fx) {
+		             drawColor(id, now*Math.PI/180, color, title, d, shadow);       
+		          } 
+		       });
+	       } else {
+	    	   drawColor(id, to*Math.PI/180, color, title, d, shadow); 
+	       }
+	    }
+	    // draw component frame at the end
+	    drawArc(id, d);  
     }
-    // draw component frame at the end
-    drawArc(id, d);  
+    
+    function resizeCanvas() {	    	
+    	draw(false);	
+    }	 
 }  
 
 /* With json object
@@ -179,7 +198,7 @@ function indicatorP(id, color, title, description, unit, min, max, value, showMi
  *    "color" : "blue"
  *  }  
  */
-function indicator(id, myjson, zoom) {	  	
+function indicator(id, myjson, zoom, useParentWidth) {	  	
 	
 	var title = myjson.title;
 	if (typeof title === "undefined") {
@@ -226,7 +245,7 @@ function indicator(id, myjson, zoom) {
 		shadow = false;
 	}	
 	
-	indicatorP(id, color, title, description, unit, min, max, value, showMinMax, shadow, zoom); 
+	indicatorP(id, color, title, description, unit, min, max, value, showMinMax, shadow, zoom, useParentWidth); 
 	
 }
 

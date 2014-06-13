@@ -26,7 +26,7 @@
  * }  
  * 
  */
-function display(id, myjson, zoom) {
+function display(id, myjson, zoom, useParentWidth) {
 	
 	var can = document.getElementById(id);
 	var ctx = can.getContext('2d');  
@@ -36,78 +36,93 @@ function display(id, myjson, zoom) {
 		can.height = $(window).height();	  
 	}
 	
-	var canWidth = can.width;
-	var canHeight = can.height;
-	var valSize = canHeight/5;	
-	var titleSize = canHeight/10;	
-	
-	var background = myjson.background;
-	if (typeof background === "undefined") {	
-		background = "white";
-	}
-	var shadow = myjson.shadow;
-	if (typeof shadow === "undefined") {
-		shadow = false;
-	}	
-	var value = myjson.value;
-	if (typeof value === "undefined") {
-		value = "NA";
-	}	
-	var valueColor = myjson.valueColor;
-	if (typeof valueColor === "undefined") {
-		valueColor = "black";
-	}	
-	var title = myjson.title;
-	var titleColor = myjson.titleColor;
-	if (typeof titleColor === "undefined") {
-		titleColor = "black";
-	}
-	var previous = myjson.previous;
-	
-	ctx.clearRect(0, 0, can.width, can.height);
-	ctx.fillStyle = background; 	
-	ctx.fillRect(0,0,can.width, can.height);	
-	
-	if (shadow) {
-		ctx.shadowColor = "#d1ceb2";
-		ctx.shadowOffsetX = 5; 
-		ctx.shadowOffsetY = 5; 
-		ctx.shadowBlur = 5;
-	}
-			
-	// draw value
-	ctx.fillStyle = valueColor;
-	ctx.font="bold " + valSize  + "px Arial";
-	var xValue = canWidth/2-ctx.measureText(value).width/2;
-	ctx.fillText(value,xValue,canHeight/2+valSize/4);
-	
-	// draw title
-	if (typeof title !== "undefined") {
-		ctx.fillStyle = titleColor;
-		ctx.font="bold " + titleSize  + "px Arial";		
-		ctx.fillText(title,xValue,2*titleSize);
+	if (useParentWidth) {
+		can.width = can.parentNode.offsetWidth;		
+		window.addEventListener('resize', resizeCanvas, false); 
 	}
 	
-	// draw previous
-	if (typeof previous !== "undefined") {
-		var previousColor = myjson.previousColor;
-		if (typeof previousColor === "undefined") {
-			previousColor = "gray";
-		}
-		var up = myjson.up;
-		if (typeof up === "undefined") {
-			up = true;
-		}		
-		var shouldRise = myjson.shouldRise;
-		if (typeof shouldRise === "undefined") {
-			shouldRise = true;
-		}			
-		drawArrow(ctx, xValue+valSize/4, canHeight-2*titleSize, up, valSize, shouldRise);
+	draw(true);
+	
+	function draw(animate) {
+		var canWidth = can.width;
+		var canHeight = can.height;
+		var valSize = canHeight/5;	
+		var titleSize = canHeight/10;	
 		
-		ctx.fillStyle = previousColor;
-		ctx.font="bold " + valSize/2  + "px Arial";		
-		ctx.fillText(previous,xValue+valSize/1.5,canHeight-2*titleSize+valSize/16);
+		var background = myjson.background;
+		if (typeof background === "undefined") {	
+			background = "white";
+		}
+		var shadow = myjson.shadow;
+		if (typeof shadow === "undefined") {
+			shadow = false;
+		}	
+		var value = myjson.value;
+		if (typeof value === "undefined") {
+			value = "NA";
+		}	
+		var valueColor = myjson.valueColor;
+		if (typeof valueColor === "undefined") {
+			valueColor = "black";
+		}	
+		var title = myjson.title;
+		var titleColor = myjson.titleColor;
+		if (typeof titleColor === "undefined") {
+			titleColor = "black";
+		}
+		var previous = myjson.previous;
+		
+		ctx.clearRect(0, 0, can.width, can.height);
+		ctx.fillStyle = background; 	
+		ctx.fillRect(0,0,can.width, can.height);	
+		
+		if (shadow) {
+			ctx.shadowColor = "#d1ceb2";
+			ctx.shadowOffsetX = 5; 
+			ctx.shadowOffsetY = 5; 
+			ctx.shadowBlur = 5;
+		}
+				
+		// draw value
+		ctx.fillStyle = valueColor;
+		ctx.font="bold " + valSize  + "px Arial";
+		var xValue = canWidth/2-ctx.measureText(value).width/2;
+		ctx.fillText(value,xValue,canHeight/2+valSize/4);
+		
+		// draw title
+		if (typeof title !== "undefined") {
+			ctx.fillStyle = titleColor;
+			ctx.font="bold " + titleSize  + "px Arial";		
+			ctx.fillText(title,xValue,2*titleSize);
+		}
+		
+		// draw previous
+		if (typeof previous !== "undefined") {
+			var previousColor = myjson.previousColor;
+			if (typeof previousColor === "undefined") {
+				previousColor = "gray";
+			}
+			var up = myjson.up;
+			if (typeof up === "undefined") {
+				up = true;
+			}		
+			var shouldRise = myjson.shouldRise;
+			if (typeof shouldRise === "undefined") {
+				shouldRise = true;
+			}			
+			drawArrow(ctx, xValue+valSize/4, canHeight-2*titleSize, up, valSize, shouldRise);
+			
+			ctx.fillStyle = previousColor;
+			ctx.font="bold " + valSize/2  + "px Arial";		
+			ctx.fillText(previous,xValue+valSize/1.5,canHeight-2*titleSize+valSize/16);
+		}
 	}
+	
+	function resizeCanvas() {	
+		var cl = can.parentNode;					
+    	can.width = cl.offsetWidth;	
+    	draw(false);	
+    }	
 	
 }
 
