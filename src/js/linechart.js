@@ -138,6 +138,9 @@ var resizeHeight = false;
 function drawLine(myjson, idCan, idTipCan, canWidth, canHeight) {	
 			
 	canvas = document.getElementById(idCan);  
+	if (canvas == null) {
+		return;
+	}
 	tipCanvas = document.getElementById(idTipCan);
 	c = canvas.getContext('2d');
 	
@@ -902,20 +905,23 @@ function getLegendSpace() {
 }
 
 function resizeCanvas() {
-	var w = canWidth;
-	if (resizeWidth) {
-		if (!isPercent(w)) {
-			w = "100%";
+	var can = document.getElementById(idCan);
+	if (can != null) {		
+		var w = canWidth;
+		if (resizeWidth) {
+			if (!isPercent(w)) {
+				w = "100%";
+			}
 		}
-	}
-	var h = canHeight;
-	if (resizeHeight) {
-		if (!isPercent(h)) {
-			h = "100%";
+		var h = canHeight;
+		if (resizeHeight) {
+			if (!isPercent(h)) {
+				h = "100%";
+			}
 		}
+		updateSize(w, h);
+		drawChart();
 	}
-	updateSize(w, h);
-	drawChart();
 }
 
 drawLine(myjson, idCan, idTipCan, canWidth, canHeight);
