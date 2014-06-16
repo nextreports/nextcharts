@@ -27,23 +27,30 @@
  * 
  */
 function display(id, myjson, zoom, useParentWidth) {
-	
-	var can = document.getElementById(id);
-	var ctx = can.getContext('2d');  
-	    
-	if (zoom == true) {	  
-	    can.width = $(window).width();
-		can.height = $(window).height();	  
+		
+	if (useParentWidth) {			
+		window.addEventListener('resize', resizeDisplayCanvas, false); 
 	}
 	
-	if (useParentWidth) {
-		can.width = can.parentNode.offsetWidth;		
-		window.addEventListener('resize', resizeCanvas, false); 
-	}
+	drawDisplay(true);
 	
-	draw(true);
-	
-	function draw(animate) {
+	function drawDisplay(animate) {
+		
+		var can = document.getElementById(id);
+		if (can == null) {
+			return;
+		}
+		var ctx = can.getContext('2d');  
+		    
+		if (zoom == true) {	  
+		    can.width = $(window).width();
+			can.height = $(window).height();	  
+		}
+		
+		if (useParentWidth) {
+			can.width = can.parentNode.offsetWidth;					
+		}
+		
 		var canWidth = can.width;
 		var canHeight = can.height;
 		var valSize = canHeight/5;	
@@ -77,10 +84,10 @@ function display(id, myjson, zoom, useParentWidth) {
 		ctx.fillRect(0,0,can.width, can.height);	
 		
 		if (shadow) {
-			ctx.shadowColor = "#d1ceb2";
-			ctx.shadowOffsetX = 5; 
-			ctx.shadowOffsetY = 5; 
-			ctx.shadowBlur = 5;
+			ctx.shadowColor = "rgba(0,0,0,0.15)";
+			ctx.shadowOffsetX = 3; 
+			ctx.shadowOffsetY = 3; 
+			ctx.shadowBlur = 2;
 		}
 				
 		// draw value
@@ -110,7 +117,7 @@ function display(id, myjson, zoom, useParentWidth) {
 			if (typeof shouldRise === "undefined") {
 				shouldRise = true;
 			}			
-			drawArrow(ctx, xValue+valSize/4, canHeight-2*titleSize, up, valSize, shouldRise);
+			drawDisplayArrow(ctx, xValue+valSize/4, canHeight-2*titleSize, up, valSize, shouldRise);
 			
 			ctx.fillStyle = previousColor;
 			ctx.font="bold " + valSize/2  + "px Arial";		
@@ -118,15 +125,16 @@ function display(id, myjson, zoom, useParentWidth) {
 		}
 	}
 	
-	function resizeCanvas() {	
-		var cl = can.parentNode;					
-    	can.width = cl.offsetWidth;	
-    	draw(false);	
+	function resizeDisplayCanvas() {	
+		var can = document.getElementById(id);
+    	if (can != null) {
+    		drawDisplay(false);
+    	}
     }	
 	
 }
 
-function drawArrow(c, dotX, dotY, up, size, shouldRise) {
+function drawDisplayArrow(c, dotX, dotY, up, size, shouldRise) {
 	var d = size/1.5;
 	c.beginPath();
 	if (up) {

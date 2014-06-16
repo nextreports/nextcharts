@@ -4791,7 +4791,7 @@ var getData = function(id, zoom, useParentWidth) {
 }
 
 // draw texts: title, description, min, max, value
-var drawText = function(id, title, description, unit, min, max, value, showMinMax, d, shadow) {
+var drawIndicatorText = function(id, title, description, unit, min, max, value, showMinMax, d, shadow) {
   var can = document.getElementById(id);
   var ctx = can.getContext('2d');      
   
@@ -4799,10 +4799,10 @@ var drawText = function(id, title, description, unit, min, max, value, showMinMa
   ctx.clearRect(0, 0, can.width, can.height);
   
   if (shadow) {
-	ctx.shadowColor = "#d1ceb2";
-	ctx.shadowOffsetX = 5; 
-	ctx.shadowOffsetY = 5; 
-	ctx.shadowBlur = 5;
+	ctx.shadowColor = "rgba(0,0,0,0.15)";
+	ctx.shadowOffsetX = 3; 
+	ctx.shadowOffsetY = 3; 
+	ctx.shadowBlur = 2;
   }
     
   ctx.fillStyle = "black";
@@ -4837,7 +4837,7 @@ var drawText = function(id, title, description, unit, min, max, value, showMinMa
 }
 
 // fill component with color
-var drawColor = function(id, angle, color, title, d, shadow) {
+var drawIndicatorColor = function(id, angle, color, title, d, shadow) {
   
    var can = document.getElementById(id);
    var ctx = can.getContext('2d');      
@@ -4879,7 +4879,7 @@ var drawColor = function(id, angle, color, title, d, shadow) {
 };
 
 // draw the component frame
-var drawArc = function(id, d) {
+var drawIndicatorArc = function(id, d) {
   
   var can = document.getElementById(id);
   var ctx = can.getContext('2d');       
@@ -4893,16 +4893,21 @@ var drawArc = function(id, d) {
   ctx.stroke();  
 }
 
-function indicatorP(id, color, title, description, unit, min, max, value, showMinMax, shadow, zoom, useParentWidth) {	  	
+function indicatorP(id, color, title, description, unit, min, max, value, showMinMax, shadow, zoom, useParentWidth) {	  
+	
+	var can = document.getElementById(id);
+	if (can == null) {
+		return;
+	}
 	
 	if (useParentWidth) {
-		window.addEventListener('resize', resizeCanvas, false);
+		window.addEventListener('resize', resizeIndicatorCanvas, false);
 	}
-    draw(true);
+    drawIndicator(true);
     
-    function draw(animate) {
+    function drawIndicator(animate) {
     	var d = getData(id, zoom, useParentWidth);    
-	    drawText(id, title, description, unit, min, max, value, showMinMax, d, shadow);
+	    drawIndicatorText(id, title, description, unit, min, max, value, showMinMax, d, shadow);
 	    
 	    if (value > max) {
 	        value = max;
@@ -4919,19 +4924,22 @@ function indicatorP(id, color, title, description, unit, min, max, value, showMi
 		       $({ n: from }).animate({ n: to}, {
 		          duration: 1000,    
 		          step: function(now, fx) {
-		             drawColor(id, now*Math.PI/180, color, title, d, shadow);       
+		             drawIndicatorColor(id, now*Math.PI/180, color, title, d, shadow);       
 		          } 
 		       });
 	       } else {
-	    	   drawColor(id, to*Math.PI/180, color, title, d, shadow); 
+	    	   drawIndicatorColor(id, to*Math.PI/180, color, title, d, shadow); 
 	       }
 	    }
 	    // draw component frame at the end
-	    drawArc(id, d);  
+	    drawIndicatorArc(id, d);  
     }
     
-    function resizeCanvas() {	    	
-    	draw(false);	
+    function resizeIndicatorCanvas() {	  
+    	var can = document.getElementById(id);
+    	if (can != null) {
+    		drawIndicator(false);
+    	}
     }	 
 }  
 
@@ -5037,23 +5045,30 @@ function getIndicatorHeight() {
  * 
  */
 function display(id, myjson, zoom, useParentWidth) {
-	
-	var can = document.getElementById(id);
-	var ctx = can.getContext('2d');  
-	    
-	if (zoom == true) {	  
-	    can.width = $(window).width();
-		can.height = $(window).height();	  
+		
+	if (useParentWidth) {			
+		window.addEventListener('resize', resizeDisplayCanvas, false); 
 	}
 	
-	if (useParentWidth) {
-		can.width = can.parentNode.offsetWidth;		
-		window.addEventListener('resize', resizeCanvas, false); 
-	}
+	drawDisplay(true);
 	
-	draw(true);
-	
-	function draw(animate) {
+	function drawDisplay(animate) {
+		
+		var can = document.getElementById(id);
+		if (can == null) {
+			return;
+		}
+		var ctx = can.getContext('2d');  
+		    
+		if (zoom == true) {	  
+		    can.width = $(window).width();
+			can.height = $(window).height();	  
+		}
+		
+		if (useParentWidth) {
+			can.width = can.parentNode.offsetWidth;					
+		}
+		
 		var canWidth = can.width;
 		var canHeight = can.height;
 		var valSize = canHeight/5;	
@@ -5087,10 +5102,10 @@ function display(id, myjson, zoom, useParentWidth) {
 		ctx.fillRect(0,0,can.width, can.height);	
 		
 		if (shadow) {
-			ctx.shadowColor = "#d1ceb2";
-			ctx.shadowOffsetX = 5; 
-			ctx.shadowOffsetY = 5; 
-			ctx.shadowBlur = 5;
+			ctx.shadowColor = "rgba(0,0,0,0.15)";
+			ctx.shadowOffsetX = 3; 
+			ctx.shadowOffsetY = 3; 
+			ctx.shadowBlur = 2;
 		}
 				
 		// draw value
@@ -5120,7 +5135,7 @@ function display(id, myjson, zoom, useParentWidth) {
 			if (typeof shouldRise === "undefined") {
 				shouldRise = true;
 			}			
-			drawArrow(ctx, xValue+valSize/4, canHeight-2*titleSize, up, valSize, shouldRise);
+			drawDisplayArrow(ctx, xValue+valSize/4, canHeight-2*titleSize, up, valSize, shouldRise);
 			
 			ctx.fillStyle = previousColor;
 			ctx.font="bold " + valSize/2  + "px Arial";		
@@ -5128,15 +5143,16 @@ function display(id, myjson, zoom, useParentWidth) {
 		}
 	}
 	
-	function resizeCanvas() {	
-		var cl = can.parentNode;					
-    	can.width = cl.offsetWidth;	
-    	draw(false);	
+	function resizeDisplayCanvas() {	
+		var can = document.getElementById(id);
+    	if (can != null) {
+    		drawDisplay(false);
+    	}
     }	
 	
 }
 
-function drawArrow(c, dotX, dotY, up, size, shouldRise) {
+function drawDisplayArrow(c, dotX, dotY, up, size, shouldRise) {
 	var d = size/1.5;
 	c.beginPath();
 	if (up) {
@@ -5174,23 +5190,29 @@ function drawArrow(c, dotX, dotY, up, size, shouldRise) {
  * 
  */
 function alarm(id, myjson, zoom, useParentWidth) {
-	
-	var can = document.getElementById(id);
-	var ctx = can.getContext('2d');  	
-	    
-	if (zoom == true) {	  
-	    can.width = $(window).width();
-		can.height = $(window).height();	  
-	}
-	
-	if (useParentWidth) {
-		can.width = can.parentNode.offsetWidth;		
-		window.addEventListener('resize', resizeCanvas, false); 
+		
+	if (useParentWidth) {			
+		window.addEventListener('resize', resizeAlarmCanvas, false); 
 	}
 		
-	draw(true);
+	drawAlarm(true);
 	
-	function draw(animate) {
+	function drawAlarm(animate) {
+		
+		var can = document.getElementById(id);
+		if (can == null) {
+			return;
+		}
+		var ctx = can.getContext('2d');  	
+		    
+		if (zoom == true) {	  
+		    can.width = $(window).width();
+			can.height = $(window).height();	  
+		}
+		
+		if (useParentWidth) {
+			can.width = can.parentNode.offsetWidth;				 
+		}
 		
 		var canWidth = can.width;
 		var canHeight = can.height;		
@@ -5217,10 +5239,10 @@ function alarm(id, myjson, zoom, useParentWidth) {
 		}	
 		
 		if (shadow) {
-			ctx.shadowColor = "#d1ceb2";
-			ctx.shadowOffsetX = 5; 
-			ctx.shadowOffsetY = 5; 
-			ctx.shadowBlur = 5;
+			ctx.shadowColor = "rgba(0,0,0,0.15)";
+			ctx.shadowOffsetX = 3; 
+			ctx.shadowOffsetY = 3; 
+			ctx.shadowBlur = 2;
 		}
 		
 		var size = canWidth;
@@ -5311,18 +5333,18 @@ function alarm(id, myjson, zoom, useParentWidth) {
 		    $({ n: from }).animate({ n: to}, {
 		       duration: 1000,    
 		       step: function(now, fx) {
-		          drawCircle(id,x,y,now,d, grd);       
+		          drawAlarmCircle(id,x,y,now,d, grd);       
 		       },
 		       complete: function() {
 		    	   
 		       }
 		    }); 
 		} else {
-			drawCircle(id,x,y,to,d, grd); 
+			drawAlarmCircle(id,x,y,to,d, grd); 
 		}
 	}
     
-    function drawCircle(id,x,y,r,d,grd) {
+    function drawAlarmCircle(id,x,y,r,d,grd) {
     	
     	var can = document.getElementById(id);
     	var ctx = can.getContext('2d');  
@@ -5352,10 +5374,11 @@ function alarm(id, myjson, zoom, useParentWidth) {
     	}
     }
     
-    function resizeCanvas() {	
-    	var cl = can.parentNode;					
-    	can.width = cl.offsetWidth;	
-    	draw(false);	
+    function resizeAlarmCanvas() {	   
+    	var can = document.getElementById(id);
+    	if (can != null) {
+    		drawAlarm(false);
+    	}
     }	        
 			
 }

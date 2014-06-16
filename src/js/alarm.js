@@ -11,23 +11,29 @@
  * 
  */
 function alarm(id, myjson, zoom, useParentWidth) {
-	
-	var can = document.getElementById(id);
-	var ctx = can.getContext('2d');  	
-	    
-	if (zoom == true) {	  
-	    can.width = $(window).width();
-		can.height = $(window).height();	  
-	}
-	
-	if (useParentWidth) {
-		can.width = can.parentNode.offsetWidth;		
-		window.addEventListener('resize', resizeCanvas, false); 
+		
+	if (useParentWidth) {			
+		window.addEventListener('resize', resizeAlarmCanvas, false); 
 	}
 		
-	draw(true);
+	drawAlarm(true);
 	
-	function draw(animate) {
+	function drawAlarm(animate) {
+		
+		var can = document.getElementById(id);
+		if (can == null) {
+			return;
+		}
+		var ctx = can.getContext('2d');  	
+		    
+		if (zoom == true) {	  
+		    can.width = $(window).width();
+			can.height = $(window).height();	  
+		}
+		
+		if (useParentWidth) {
+			can.width = can.parentNode.offsetWidth;				 
+		}
 		
 		var canWidth = can.width;
 		var canHeight = can.height;		
@@ -54,10 +60,10 @@ function alarm(id, myjson, zoom, useParentWidth) {
 		}	
 		
 		if (shadow) {
-			ctx.shadowColor = "#d1ceb2";
-			ctx.shadowOffsetX = 5; 
-			ctx.shadowOffsetY = 5; 
-			ctx.shadowBlur = 5;
+			ctx.shadowColor = "rgba(0,0,0,0.15)";
+			ctx.shadowOffsetX = 3; 
+			ctx.shadowOffsetY = 3; 
+			ctx.shadowBlur = 2;
 		}
 		
 		var size = canWidth;
@@ -148,18 +154,18 @@ function alarm(id, myjson, zoom, useParentWidth) {
 		    $({ n: from }).animate({ n: to}, {
 		       duration: 1000,    
 		       step: function(now, fx) {
-		          drawCircle(id,x,y,now,d, grd);       
+		          drawAlarmCircle(id,x,y,now,d, grd);       
 		       },
 		       complete: function() {
 		    	   
 		       }
 		    }); 
 		} else {
-			drawCircle(id,x,y,to,d, grd); 
+			drawAlarmCircle(id,x,y,to,d, grd); 
 		}
 	}
     
-    function drawCircle(id,x,y,r,d,grd) {
+    function drawAlarmCircle(id,x,y,r,d,grd) {
     	
     	var can = document.getElementById(id);
     	var ctx = can.getContext('2d');  
@@ -189,10 +195,11 @@ function alarm(id, myjson, zoom, useParentWidth) {
     	}
     }
     
-    function resizeCanvas() {	
-    	var cl = can.parentNode;					
-    	can.width = cl.offsetWidth;	
-    	draw(false);	
+    function resizeAlarmCanvas() {	   
+    	var can = document.getElementById(id);
+    	if (can != null) {
+    		drawAlarm(false);
+    	}
     }	        
 			
 }

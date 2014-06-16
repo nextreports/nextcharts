@@ -42,7 +42,7 @@ var getData = function(id, zoom, useParentWidth) {
 }
 
 // draw texts: title, description, min, max, value
-var drawText = function(id, title, description, unit, min, max, value, showMinMax, d, shadow) {
+var drawIndicatorText = function(id, title, description, unit, min, max, value, showMinMax, d, shadow) {
   var can = document.getElementById(id);
   var ctx = can.getContext('2d');      
   
@@ -50,10 +50,10 @@ var drawText = function(id, title, description, unit, min, max, value, showMinMa
   ctx.clearRect(0, 0, can.width, can.height);
   
   if (shadow) {
-	ctx.shadowColor = "#d1ceb2";
-	ctx.shadowOffsetX = 5; 
-	ctx.shadowOffsetY = 5; 
-	ctx.shadowBlur = 5;
+	ctx.shadowColor = "rgba(0,0,0,0.15)";
+	ctx.shadowOffsetX = 3; 
+	ctx.shadowOffsetY = 3; 
+	ctx.shadowBlur = 2;
   }
     
   ctx.fillStyle = "black";
@@ -88,7 +88,7 @@ var drawText = function(id, title, description, unit, min, max, value, showMinMa
 }
 
 // fill component with color
-var drawColor = function(id, angle, color, title, d, shadow) {
+var drawIndicatorColor = function(id, angle, color, title, d, shadow) {
   
    var can = document.getElementById(id);
    var ctx = can.getContext('2d');      
@@ -130,7 +130,7 @@ var drawColor = function(id, angle, color, title, d, shadow) {
 };
 
 // draw the component frame
-var drawArc = function(id, d) {
+var drawIndicatorArc = function(id, d) {
   
   var can = document.getElementById(id);
   var ctx = can.getContext('2d');       
@@ -144,16 +144,21 @@ var drawArc = function(id, d) {
   ctx.stroke();  
 }
 
-function indicatorP(id, color, title, description, unit, min, max, value, showMinMax, shadow, zoom, useParentWidth) {	  	
+function indicatorP(id, color, title, description, unit, min, max, value, showMinMax, shadow, zoom, useParentWidth) {	  
+	
+	var can = document.getElementById(id);
+	if (can == null) {
+		return;
+	}
 	
 	if (useParentWidth) {
-		window.addEventListener('resize', resizeCanvas, false);
+		window.addEventListener('resize', resizeIndicatorCanvas, false);
 	}
-    draw(true);
+    drawIndicator(true);
     
-    function draw(animate) {
+    function drawIndicator(animate) {
     	var d = getData(id, zoom, useParentWidth);    
-	    drawText(id, title, description, unit, min, max, value, showMinMax, d, shadow);
+	    drawIndicatorText(id, title, description, unit, min, max, value, showMinMax, d, shadow);
 	    
 	    if (value > max) {
 	        value = max;
@@ -170,19 +175,22 @@ function indicatorP(id, color, title, description, unit, min, max, value, showMi
 		       $({ n: from }).animate({ n: to}, {
 		          duration: 1000,    
 		          step: function(now, fx) {
-		             drawColor(id, now*Math.PI/180, color, title, d, shadow);       
+		             drawIndicatorColor(id, now*Math.PI/180, color, title, d, shadow);       
 		          } 
 		       });
 	       } else {
-	    	   drawColor(id, to*Math.PI/180, color, title, d, shadow); 
+	    	   drawIndicatorColor(id, to*Math.PI/180, color, title, d, shadow); 
 	       }
 	    }
 	    // draw component frame at the end
-	    drawArc(id, d);  
+	    drawIndicatorArc(id, d);  
     }
     
-    function resizeCanvas() {	    	
-    	draw(false);	
+    function resizeIndicatorCanvas() {	  
+    	var can = document.getElementById(id);
+    	if (can != null) {
+    		drawIndicator(false);
+    	}
     }	 
 }  
 
