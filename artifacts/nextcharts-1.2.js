@@ -4889,10 +4889,10 @@ var drawIndicatorColor = function(id, angle, color, title, d, shadow) {
 
    // draw title again to be over the fill color
    if (shadow) {
-		ctx.shadowColor = "#d1ceb2";
-		ctx.shadowOffsetX = 5; 
-		ctx.shadowOffsetY = 5; 
-		ctx.shadowBlur = 5;
+		ctx.shadowColor = "rgba(0,0,0,0.15)";
+		ctx.shadowOffsetX = 3; 
+		ctx.shadowOffsetY = 3; 
+		ctx.shadowBlur = 2;
    }
    ctx.fillStyle = "black";  
    ctx.font="bold " + d.size/10 + "px Arial";
