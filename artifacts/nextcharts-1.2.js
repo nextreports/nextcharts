@@ -5096,6 +5096,9 @@ function display(id, myjson, zoom, useParentWidth) {
 		
 		var canWidth = can.width;
 		var canHeight = can.height;
+		if (canHeight > canWidth) {
+			canHeight = canWidth;
+		}
 		var valSize = canHeight/5;	
 		var titleSize = canHeight/10;	
 		
