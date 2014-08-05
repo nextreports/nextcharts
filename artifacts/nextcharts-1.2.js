@@ -5056,7 +5056,10 @@ function getIndicatorHeight() {
  * 
  * shouldRise=true means up arrow will be green, otherwise down arrow will be green
  * 
+ * titleAlignment can be center or alignToValue
+ * 
  * { "title" : "Avg time in site",   
+ *   "titleAlignment" : "center",
  *   "value" : "6m57s",    
  *   "previous" : "7m10s"  // or "5.35%"
  *   "up" : false,
@@ -5123,6 +5126,12 @@ function display(id, myjson, zoom, useParentWidth) {
 		if (typeof titleColor === "undefined") {
 			titleColor = "black";
 		}
+		
+		var titleAlignment = myjson.titleAlignment;
+		if (typeof titleAlignment === "undefined") {
+			titleAlignment = "alignToValue";
+		}
+		
 		var previous = myjson.previous;
 		
 		ctx.clearRect(0, 0, can.width, can.height);
@@ -5145,8 +5154,12 @@ function display(id, myjson, zoom, useParentWidth) {
 		// draw title
 		if (typeof title !== "undefined") {
 			ctx.fillStyle = titleColor;
-			ctx.font="bold " + titleSize  + "px Arial";		
-			ctx.fillText(title,xValue,2*titleSize);
+			ctx.font="bold " + titleSize  + "px Arial";
+			var xTitle = xValue;
+			if (titleAlignment === "center") {
+				xTitle = canWidth/2-ctx.measureText(title).width/2;
+			}
+			ctx.fillText(title,xTitle,2*titleSize);
 		}
 		
 		// draw previous
