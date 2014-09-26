@@ -12,9 +12,9 @@ A small number of widgets is also contained by this library.
 
 There are some samples (to see how json properties must be specified) in src/html:
 
-1. main-test.html             independent chart test
-2. main-jetty-test.html       jetty chart test (must run ro.nextreports.charts.JsonHandler to start server)
-3. main-widget-test.html      independent widget test   
+1. main-test.html, main-test-dualAxis.html    independent chart tests
+2. main-jetty-test.html                       jetty chart test (must run ro.nextreports.charts.JsonHandler to start server)
+3. main-widget-test.html                      independent widget test   
 
 ##Read more
 
