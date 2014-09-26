@@ -78,6 +78,17 @@
  *   	"decimalSeparator" : ".",
  *      "thousandSeparator" : ","
  *   },
+ *   "dualYaxis": true, 
+ *   "colorY2axis": "blue",
+ *   "y2Legend" : {
+ *      "text": "Sales",
+ *   	"font": {
+ *   		"weight": "bold", 
+ *   		"size": "16", 
+ *   		"family": "sans-serif"
+ *   	}, 
+ *   	"color": "blue"
+ *   },
  *   "onClick" : "function doClick(value){console.log("Call from function: " + value);}"
  * }
  * 
@@ -110,9 +121,16 @@ var max;
 var min;
 //space between 2 ticks
 var tickStep;
-
 var minValY;
 var maxValY;
+// for dual Y axis
+var y2Step;
+var max2;
+var min2;
+var minValY2;
+var maxValY2;
+var hStep2 = 0;
+var y2LegendSpace = 0;
 // bottom vertical space (to fit X labels and X legend)
 var step = 0;
 var gap = 40;
@@ -219,7 +237,11 @@ function drawLine(myjson, idCan, idTipCan, canWidth, canHeight) {
     }    
 	
 	// compute min ,max values
-	for (var k=0; k<series; k++) {
+	var countNo = series;
+	if ((countNo > 1) && obj.dualYaxis) {
+		countNo = series-1;
+	}
+	for (var k=0; k<countNo; k++) {
 		maxK[k] = Math.max.apply( Math, obj.data[k] );
 		minK[k] = Math.min.apply( Math, obj.data[k] ); 
 	}    	
@@ -229,10 +251,23 @@ function drawLine(myjson, idCan, idTipCan, canWidth, canHeight) {
     var objStep = calculateYStep(min, max, tickCount);
     yStep = objStep.yStep;
     minValY = objStep.minValY;
-    maxValY = objStep.maxValY;
+    maxValY = objStep.maxValY;    
     
     // compute hStep (for vertical labels and yLegend to fit) 
-	hStep = computeHStep();	
+	hStep = computeHStep(maxValY, yStep, true);		
+	
+	// for y dual axis
+	if (obj.dualYaxis) {
+		max2 = Math.max.apply( Math, obj.data[series-1]);	         
+		min2 = Math.min.apply( Math, obj.data[series-1]);
+		
+		var objStep2 = calculateYStep(min2, max2, tickCount);
+	    y2Step = objStep2.yStep;
+	    minValY2 = objStep2.minValY;
+	    maxValY2 = objStep2.maxValY; 
+	    
+	    hStep2 = computeHStep(maxValY2, y2Step, false);		    
+	}
         		
 	updateSize(canWidth, canHeight);
     
@@ -338,17 +373,23 @@ function drawData(withFill, withClick, mousePos) {
 	  dotsK[k] = [];	
 	  for(var i=0; i<data.length; i++) { 		  
 	    var dp = obj.data[k][i];	
-	    var width =  (realWidth - hStep - gap*(1+Math.sqrt(series)))/data.length;
-	    var dotX = hStep + i*(realWidth-hStep)/data.length + width/2;       
-	    var Yheight = realHeight-step-(dp-minValY)*tickStep/yStep;    
+	    var width =  (realWidth - hStep - hStep2 - gap*(1+Math.sqrt(series)))/data.length;
+	    var dotX = hStep + i*(realWidth-hStep-hStep2)/data.length + width/2;       
+	    var Yheight = realHeight-step-(dp-minValY)*tickStep/yStep;  
+	    if (obj.dualYaxis && (k == series-1)) {
+	    	Yheight = realHeight-step-(dp-minValY2)*tickStep/y2Step;  
+	    }
 	    var dotY = realHeight-step-H;
 	    var dotX2 = dotX;
 	    var dotY2 = dotY;
 	    var Yheight2 = Yheight;
 	    if (i < data.length-1) {
-	    	dotX2 = hStep + (i+1)*(realWidth-hStep)/data.length + width/2;
+	    	dotX2 = hStep + (i+1)*(realWidth-hStep-hStep2)/data.length + width/2;
 	    	dotY2 = realHeight-step-H;
 	    	Yheight2 = realHeight-step-(obj.data[k][i+1]-minValY)*tickStep/yStep;
+	    	if (obj.dualYaxis && (k == series-1)) {
+	    		Yheight2 = realHeight-step-(obj.data[k][i+1]-minValY2)*tickStep/y2Step;
+	    	}
 	    }
 	    	    	    
 	    if (dotY <= Yheight) {
@@ -508,7 +549,34 @@ function drawInit() {
 		c.font = font;            
 	} else {
 		yLegendSpace = 0;
+	}
+	
+	// draw Y2 legend
+	if (obj.dualYaxis && (typeof obj.y2Legend !== "undefined")) {
+		var y2LegendColor = obj.y2Legend.color;
+		if (y2LegendColor === undefined) {
+			y2LegendColor = '#000000';
+		}
+		var b = " ";
+		var f = obj.y2Legend.font;
+		if (f === undefined) {
+			f.weight = "bold";
+			f.size = 12;
+			f.family = "sans-serif";
+		}
+		c.font = f.weight + b + f.size + "px" + b + f.family;      
+		c.fillStyle = y2LegendColor;		
+		c.save();	    	
+    	c.translate(realWidth - f.size - 10  , realHeight/2);
+    	c.rotate(-Math.PI/2);
+    	c.textAlign = "center";	    	     	
+    	c.fillText(obj.y2Legend.text,0, f.size);
+    	c.restore();		    
+		c.font = font;            
+	} else {
+		y2LegendSpace = 0;
 	}    
+
 
 	// draw legend	
 	if (typeof obj.legend !== "undefined") {         
@@ -566,13 +634,20 @@ function drawLabels(xLabelWidth) {
 		}
 		for(var i=0; i<tickCount+1; i++) {        		
 			var label;
+			var label2;
 			if (obj.tooltipPattern !== undefined) {
 				// y labels can have more than two decimals
 				var decimals = obj.tooltipPattern.decimals;
 				var exp = Math.pow(10, decimals);
 				label = Math.round((maxValY-i*yStep)*exp)/exp;
+				if (obj.dualYaxis) { 
+					label2 = Math.round((maxValY2-i*y2Step)*exp)/exp;
+				}
 			} else {
 				label = Math.round((maxValY-i*yStep)*100)/100;
+				if (obj.dualYaxis) { 
+					label2 = Math.round((maxValY2-i*y2Step)*100)/100;
+				}
 			}
 			var labelWidth = c.measureText(label).width;   						
 			
@@ -583,7 +658,21 @@ function drawLabels(xLabelWidth) {
 		    c.moveTo(hStep-15,i*tickStep+tickInit+titleSpace+legendSpace);     
 		    c.lineTo(hStep-10,i*tickStep+tickInit+titleSpace+legendSpace);   
 		    c.closePath();    
-		    c.stroke();    	       	    
+		    c.stroke();    
+		    
+		    if (obj.dualYaxis) { 
+		    	var labelWidth2 = c.measureText(label2).width;   						
+				
+				c.fillText(label2 + "",realWidth-hStep2+5 , i*tickStep+tickInit+titleSpace+legendSpace);
+				
+				c.lineWidth = 2.0; 
+				c.beginPath();     
+			    c.moveTo(realWidth-hStep2,i*tickStep+tickInit+titleSpace+legendSpace);     
+			    c.lineTo(realWidth-hStep2+5,i*tickStep+tickInit+titleSpace+legendSpace);   
+			    c.closePath();    
+			    c.stroke();    
+		    }
+		    
 		} 
 		c.font = font;
 	}
@@ -598,7 +687,7 @@ function drawLabels(xLabelWidth) {
 			c.font = xfont.weight + b + xfont.size + "px" + b + xfont.family;  
 		}		
 		for(var i=0; i<labels.length; i++) {   
-		    var middleX = hStep + i*(realWidth-hStep )/data.length + (realWidth - hStep - gap*(1+Math.sqrt(series)))/data.length/2;
+		    var middleX = hStep + i*(realWidth-hStep-hStep2 )/data.length + (realWidth - hStep - hStep2 - gap*(1+Math.sqrt(series)))/data.length/2;
 		    		
 			var xLabelSpace = computeXLabelSpace(labels[i]);
 			if (labelOrientation == "vertical") {
@@ -645,7 +734,11 @@ function drawGrid() {
 	    	c.lineWidth = 0.2;        
 	        c.beginPath(); 
 	        c.moveTo(hStep-10,i*tickStep+tickInit+titleSpace+legendSpace);  
-	        c.lineTo(realWidth-10,i*tickStep+tickInit+titleSpace+legendSpace);  
+	        var diff = 10;
+	        if (obj.dualYaxis) {
+	        	diff = hStep2;
+	        }
+	        c.lineTo(realWidth-diff,i*tickStep+tickInit+titleSpace+legendSpace);  
 	        c.closePath();    
 	        c.stroke();
 	        c.lineWidth = 2.0;   
@@ -656,7 +749,7 @@ function drawGrid() {
 	// draw  vertical grid  (for X labels)
     if (showGridX) {
     	for(var i=0; i<labels.length; i++) {   
-    		var middleX = hStep + i*(realWidth-hStep )/data.length + (realWidth - hStep - gap*(1+Math.sqrt(series)))/data.length/2;	    	    
+    		var middleX = hStep + i*(realWidth-hStep-hStep2 )/data.length + (realWidth - hStep - hStep2 - gap*(1+Math.sqrt(series)))/data.length/2;	    	    
 	    	var yColor = c.strokeStyle;
 	    	if (obj.colorGridX !== "undefined") {
 	    		c.strokeStyle = obj.colorGridX;
@@ -694,12 +787,26 @@ function drawAxis() {
 		c.strokeStyle = obj.colorXaxis;
 	}	
 	c.beginPath(); 
-	c.moveTo(hStep-10,realHeight-step); 
-	
-	c.lineTo(realWidth-5,realHeight-step);
-	
+	c.moveTo(hStep-10,realHeight-step); 	
+	var diff = 5;
+	if (obj.dualYaxis) {
+		diff = hStep2 - 5;
+	}
+	c.lineTo(realWidth-diff,realHeight-step);	
 	c.closePath();
 	c.stroke();
+	
+	// second y axis
+	if (obj.dualYaxis) {
+		if (obj.colorY2axis !== "undefined") {
+			c.strokeStyle = obj.colorY2axis;
+		}
+		c.beginPath(); 
+		c.moveTo(realWidth-hStep2,titleSpace+legendSpace); 	
+		c.lineTo(realWidth-hStep2,realHeight-step);	
+		c.closePath();
+		c.stroke();
+	}
 	
 	c.strokeStyle = axisColor;
 }
@@ -735,7 +842,7 @@ function drawChart() {
 }  
 
 //compute hStep (for vertical labels and yLegend to fit) 
-function computeHStep() {	
+function computeHStep(maxValY, yStep, takeCare) {	
 	var result;
 	var font = c.font;
 	if (showTicks) {
@@ -757,48 +864,68 @@ function computeHStep() {
 		result = 20;
 	}
 	c.font = font;
-	if (typeof obj.yLegend !== "undefined") {		
-		var b = " ";
-		var f = obj.yLegend.font;
-		if (f === undefined) {
-			f.weight = "bold";
-			f.size = 12;
-			f.family = "sans-serif";
+		
+	if (obj.dualYaxis && !takeCare) {
+		if (typeof obj.y2Legend !== "undefined") {		
+			var b = " ";
+			var f = obj.y2Legend.font;
+			if (f === undefined) {
+				f.weight = "bold";
+				f.size = 12;
+				f.family = "sans-serif";
+			}
+			c.font = f.weight + b + f.size + "px" + b + f.family;      
+			y2LegendSpace = f.size;		    
+			c.font = font;            
+			result += y2LegendSpace;
 		}
-		c.font = f.weight + b + f.size + "px" + b + f.family;      
-		yLegendSpace = +20 + +f.size;		    
-		c.font = font;            
-		result += yLegendSpace;
 	}
 	
 	// take care for halfdiagonal, diagonal long labels
 	// if they are too long hStep must be increased accordingly
-	var cf = c.font;
-	if (obj.xData !== undefined) {		
-		var b = " ";
-		var xfont = obj.xData.font;
-		c.font = xfont.weight + b + xfont.size + "px" + b + xfont.family;  
-	}		
-	var minPos = new Array();
-	for(var i=0; i<labels.length; i++) {		
-		realWidth = canvas.width;		
-		var middleX = result + i*(realWidth-result )/data.length + (realWidth - result - gap*(1+Math.sqrt(series)))/data.length/2;
-		var angle;
-		if (labelOrientation == "diagonal") {
-			angle = Math.PI/4;	    			
-	     } else if (labelOrientation == "halfdiagonal") {		    	
-		    angle = Math.PI/8;		
-	    } 
-		if (angle !== undefined) {
-			var len = middleX - c.measureText(labels[i]).width * Math.cos(angle);
-			minPos.push(len);				    	
+	// for dual Y axis we do not need this
+	if (takeCare) {				
+		if (typeof obj.yLegend !== "undefined") {		
+			var b = " ";
+			var f = obj.yLegend.font;
+			if (f === undefined) {
+				f.weight = "bold";
+				f.size = 12;
+				f.family = "sans-serif";
+			}
+			c.font = f.weight + b + f.size + "px" + b + f.family;      
+			yLegendSpace = +20 + +f.size;		    
+			c.font = font;            
+			result += yLegendSpace;
+		}
+		
+		var cf = c.font;
+		if (obj.xData !== undefined) {		
+			var b = " ";
+			var xfont = obj.xData.font;
+			c.font = xfont.weight + b + xfont.size + "px" + b + xfont.family;  
 		}		
-	}		
-	var len = Math.min.apply( Math, minPos );
-	if (minPos.length > 0) {			
-    	if (len < 10) {
-    		result += (10 - len);
-    	}	 
+		var minPos = new Array();
+		for(var i=0; i<labels.length; i++) {		
+			realWidth = canvas.width;		
+			var middleX = result + i*(realWidth-result )/data.length + (realWidth - result - gap*(1+Math.sqrt(series)))/data.length/2;
+			var angle;
+			if (labelOrientation == "diagonal") {
+				angle = Math.PI/4;	    			
+		     } else if (labelOrientation == "halfdiagonal") {		    	
+			    angle = Math.PI/8;		
+		    } 
+			if (angle !== undefined) {
+				var len = middleX - c.measureText(labels[i]).width * Math.cos(angle);
+				minPos.push(len);				    	
+			}		
+		}		
+		var len = Math.min.apply( Math, minPos );
+		if (minPos.length > 0) {			
+	    	if (len < 10) {
+	    		result += (10 - len);
+	    	}	 
+		}
 	}
 	
 	return result;
