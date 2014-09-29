@@ -86,10 +86,10 @@
 	// create test jsons
 	function createJsons() {
 			
-		jsons.push({id:"1", json:"{\"data\":[[16,66,24,30,80,52],[30,40,28,52,74,50],[48000,50000,29000,60000,70000,58000]]," + 
+		jsons.push({id:"1", json:"{\"data\":[[16,66,24,30,80,52],[35,40,28,52,74,50],[48000,50000,29000,60000,70000,58000]]," + 
 	        " \"labels\":[\"JAN\",\"FEB\",\"MAR\",\"APR\",\"MAY\",\"JUN\"]," + 
 			" \"color\":[\"#004CB3\",\"#A04CB3\",\"#7aa37a\"]," +
-	        " \"legend\":[\"2011 First year of work\",\"2012 Second year of work\",\"2013 Third year of work\"]," +
+	        " \"legend\":[\"First Product\",\"Second Product\",\"Average Capital\"]," +
 			" \"alpha\":0.6," + 
 			" \"showGridX\":true," + 
 			" \"showGridY\":true," + 
@@ -102,7 +102,7 @@
 	        " \"background\":\"" + background + "\"," +
 	        " \"type\":\"line\"," +
 	        " \"style\":\"soliddot\"," +
-	        " \"dualYaxis\":true," + 	 	         
+	        " \"dualYaxis\":true," +	         	
 	        " \"yData\":{\"font\":{\"weight\":\"bold\",\"size\":14,\"family\":\"sans-serif\"}, \"color\":\"blue\"}," +
 	        " \"xData\":{\"font\":{\"weight\":\"bold\",\"size\":14,\"family\":\"sans-serif\"}, \"color\":\"blue\"}," +
 	        " \"yLegend\":{\"text\":\"Price\",\"font\":{\"weight\":\"bold\",\"size\":14,\"family\":\"sans-serif\"}, \"color\":\"#993366\"}," +
@@ -111,12 +111,12 @@
 	        "}"});
 		
 		jsons.push({id:"2", json:"{\"data\":[[16,66,24,30,80,52],[48,50,29,60,60,58],[30,40,28,52,34,50]]," + 
-	        " \"lineData\":[[10000, 12000, 5300, 21000, 4000, 13000]],"+
+	        " \"lineData\":[[6000, 13000, 8000, 29000, 40000, 10000],[10000, 12000, 5300, 21000, 4000, 13000]],"+
 	        " \"labels\":[\"JAN\",\"FEB\",\"MAR\",\"APR\",\"MAY\",\"JUN\"]," + 
 			" \"color\":[\"#004CB3\",\"#A04CB3\",\"#7aa37a\"]," +
 	        " \"lineColor\":[\"#270283\", \"#CC6633\"]," +
 	        " \"legend\":[\"2011\",\"2012\",\"2013\"]," +
-	        " \"lineLegend\":[\"Profit\"]," +
+	        " \"lineLegend\":[\"Profit\", \"Venture Capital\"]," +
 			" \"alpha\":0.6," + 
 			" \"showGridX\":true," + 
 			" \"showGridY\":true," +			 
@@ -127,9 +127,10 @@
 			" \"title\":{\"text\":\"Financial Analysis\", \"font\":{\"weight\":\"bold\", \"size\":16, \"family\":\"sans-serif\"}, \"color\":\"blue\", \"alignment\":\"center\"}," +
 	        " \"labelOrientation\":\"horizontal\"," +
 	        " \"background\":\"" + background + "\"," +
-	        " \"type\":\"stackedbar\"," +
+	        " \"type\":\"bar\"," +
 	        " \"style\":\"glass\"," +
 	        " \"dualYaxis\":true," + 	
+	        " \"y2Count\":2," + 
 	        " \"yData\":{\"font\":{\"weight\":\"bold\",\"size\":14,\"family\":\"sans-serif\"}, \"color\":\"blue\"}," +
 	        " \"xData\":{\"font\":{\"weight\":\"bold\",\"size\":14,\"family\":\"sans-serif\"}, \"color\":\"blue\"}," +
 	        " \"yLegend\":{\"text\":\"Price\",\"font\":{\"weight\":\"bold\",\"size\":14,\"family\":\"sans-serif\"}, \"color\":\"#993366\"}," +

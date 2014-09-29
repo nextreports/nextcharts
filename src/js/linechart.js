@@ -8,6 +8,7 @@
  * message -> can have markup #val for value, , #x for x label
  *         -> can contain <br> to split text on more lines
  * title.alignment -> center, left, right
+ * y2Count -> number of last series represented on dual y2 axis
  * onClick -> is a javascript function like 'function doClick(value){ ...}'  *            
  * 
  * { "type": "line", "area"
@@ -89,6 +90,7 @@
  *   	}, 
  *   	"color": "blue"
  *   },
+ *   "y2Count" : 1,
  *   "onClick" : "function doClick(value){console.log("Call from function: " + value);}"
  * }
  * 
@@ -125,12 +127,15 @@ var minValY;
 var maxValY;
 // for dual Y axis
 var y2Step;
+var maxK2 = new Array(); 
+var minK2 = new Array();
 var max2;
 var min2;
 var minValY2;
 var maxValY2;
 var hStep2 = 0;
 var y2LegendSpace = 0;
+var y2Count = 1;
 // bottom vertical space (to fit X labels and X legend)
 var step = 0;
 var gap = 40;
@@ -236,10 +241,19 @@ function drawLine(myjson, idCan, idTipCan, canWidth, canHeight) {
 		seriesColor = distinctHexColors(series);
     }    
 	
+	y2Count = obj.y2Count;
+	if (typeof y2Count === "undefined") {	
+		y2Count = 1;
+	}
+	// must have at least one series on first Y axis
+	if (y2Count >= series) {
+		y2Count = series-1;
+	}
+	
 	// compute min ,max values
 	var countNo = series;
 	if ((countNo > 1) && obj.dualYaxis) {
-		countNo = series-1;
+		countNo = series-y2Count;
 	}
 	for (var k=0; k<countNo; k++) {
 		maxK[k] = Math.max.apply( Math, obj.data[k] );
@@ -257,9 +271,18 @@ function drawLine(myjson, idCan, idTipCan, canWidth, canHeight) {
 	hStep = computeHStep(maxValY, yStep, true);		
 	
 	// for y dual axis
-	if (obj.dualYaxis) {
-		max2 = Math.max.apply( Math, obj.data[series-1]);	         
-		min2 = Math.min.apply( Math, obj.data[series-1]);
+	if (obj.dualYaxis && (countNo > 0)) {		
+		
+		if (countNo == series) {
+			countNo = series-1;
+		}
+		
+		for (var k=countNo; k<series; k++) {
+			maxK2[k-countNo] = Math.max.apply( Math, obj.data[k] );
+			minK2[k-countNo] = Math.min.apply( Math, obj.data[k] ); 
+		}    	
+	    max2 = Math.max.apply( Math, maxK2);	         
+	    min2 = Math.min.apply( Math, minK2);
 		
 		var objStep2 = calculateYStep(min2, max2, tickCount);
 	    y2Step = objStep2.yStep;
@@ -376,7 +399,7 @@ function drawData(withFill, withClick, mousePos) {
 	    var width =  (realWidth - hStep - hStep2 - gap*(1+Math.sqrt(series)))/data.length;
 	    var dotX = hStep + i*(realWidth-hStep-hStep2)/data.length + width/2;       
 	    var Yheight = realHeight-step-(dp-minValY)*tickStep/yStep;  
-	    if (obj.dualYaxis && (k == series-1)) {
+	    if (obj.dualYaxis && (y2Count > 0) && (k >= series-y2Count)) {
 	    	Yheight = realHeight-step-(dp-minValY2)*tickStep/y2Step;  
 	    }
 	    var dotY = realHeight-step-H;
@@ -387,7 +410,7 @@ function drawData(withFill, withClick, mousePos) {
 	    	dotX2 = hStep + (i+1)*(realWidth-hStep-hStep2)/data.length + width/2;
 	    	dotY2 = realHeight-step-H;
 	    	Yheight2 = realHeight-step-(obj.data[k][i+1]-minValY)*tickStep/yStep;
-	    	if (obj.dualYaxis && (k == series-1)) {
+	    	if (obj.dualYaxis && (y2Count > 0) && (k >= series-y2Count)) {
 	    		Yheight2 = realHeight-step-(obj.data[k][i+1]-minValY2)*tickStep/y2Step;
 	    	}
 	    }
