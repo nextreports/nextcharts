@@ -415,7 +415,7 @@ function drawInit() {
 		}
 		var xTitle;
 		if (alignment == "left") {
-			xTitle = hStep;
+			xTitle = 10;
 		} else if (alignment == "right") {
 			xTitle = canvas.width - c.measureText(obj.title.text).width - 10;
 		} else {
