@@ -1,5 +1,13 @@
 #NextCharts
 
+ _   _           _   _____ _                _       
+| \ | |         | | /  __ \ |              | |      
+|  \| | _____  _| |_| /  \/ |__   __ _ _ __| |_ ___ 
+| . \ |/ _ \ \/ / __| |   | '_ \ / _` | '__| __/ __|
+| |\  |  __/>  <| |_| \__/\ | | | (_| | |  | |_\__ \
+\_| \_/\___/_/\_\\__|\____/_| |_|\__,_|_|   \__|___/
+                                                    
+
 Open source HTML5 charts using the canvas tag. This library is used by [NextReports](https://github.com/nextreports/nextreports) from version 7.
 
 ![alt tag](http://2.bp.blogspot.com/-ouJicYwR4D0/Uv3pAiWORgI/AAAAAAAAJDo/a6RxWpXU3QM/s1600/NextServerCharts-white.png)
