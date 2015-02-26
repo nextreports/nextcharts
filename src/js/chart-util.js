@@ -104,7 +104,7 @@ var handleMouseEvent = {
 		
 	var tipCtx = tipCanvas.getContext('2d');			
 	
-    tipCanvas.style.left = (canvas.offsetLeft + this.mousePos.x) + "px";	  
+    tipCanvas.style.left = (canvas.offsetLeft + this.mousePos.x) + "px";
     tipCtx.clearRect(0, 0, tipCanvas.width, tipCanvas.height);    
     var textWidth = tipCtx.measureText(this.tooltip).width;
       

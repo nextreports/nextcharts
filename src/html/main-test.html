@@ -30,10 +30,6 @@
   	margin: 2px;
   }
   
-  .dashboard {
-  	float: left;
-  }
-  
   .download {
   	margin-left: 1px;
   }
@@ -68,7 +64,7 @@
 					
 	// dynamically create canvas tags
 	function addCanvases() {
-		  var body = document.getElementsByTagName("div")[0] ;		 
+		  var body = document.getElementsByTagName("body")[0] ;		 
 		  for(var i=0; i<count; i++) { 				  
 		  	var newCanvas = document.createElement('canvas');
 		  	newCanvas.setAttribute('id','canvas'+(i+1));
@@ -97,6 +93,7 @@
 	
 	function downloadPdf() {
 		$('#download').click(function() {   
+			$('#download').hide();
 			var doc = new jsPDF('l', 'mm'); // orientation (p, l) , measure unit	
 			
 			// catch every canvas as an image on a separate page inside pdf
@@ -112,12 +109,13 @@
 			capturePdf(pdfSettings);*/
 			
 			// catch entire screen as image			
-			var list = $('#dashboard');
+			var list = $('body');
 			var pdfSettings = new Object();
 			pdfSettings.doc = doc;
 			pdfSettings.elements = list;
 			pdfSettings.title = "NextReports Dashboard";
 			capturePdf(pdfSettings);
+			$('#download').show();
 			
 	    });
 	}
@@ -273,8 +271,7 @@
 </script>
 </head>
 <body>	
-	<button class="download" id="download">Download Pdf</button> 	   
-	<div class="dashboard" id="dashboard">		
-	</div>
+	 <button class="download" id="download">Download Pdf</button>
+	 <br> 	   	
 </body>
 </html>
