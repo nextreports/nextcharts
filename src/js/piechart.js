@@ -68,6 +68,10 @@ var resizeWidth = false;
 var resizeHeight = false;
 // position computed if labels are outside canvas; used to shrink the radius
 var delta = 0;
+//by default chart title and legends strings have a defined font size
+//if we want to have font size scaled accordingly with chart width then this property must be true 
+//(such example may be when we want to show the chart on a big monitor)
+var adjustableTextFontSize = false;
 
 function drawPie(myjson, idCan, idTipCan, canWidth, canHeight) {	
 			
@@ -113,6 +117,11 @@ function drawPie(myjson, idCan, idTipCan, canWidth, canHeight) {
 	if (typeof message === "undefined") {		
 		message = "#val / #total<br>#percent% of 100%";		
 	}
+	
+	adjustableTextFontSize = obj.adjustableTextFontSize;
+	if (typeof adjustableTextFontSize === "undefined") {
+		adjustableTextFontSize = false;
+	}	
 					
 	seriesColor = obj.color;
 	if (typeof seriesColor === "undefined") {
@@ -369,9 +378,17 @@ function drawLabels(i, pieData) {
 			var b = " ";
 			var xfont = obj.xData.font;
 			fontHeight = xfont.size;
+			if (adjustableTextFontSize) {
+				fontHeight=getAdjustableTitleFontSize();
+				xfont.size=fontHeight;
+			}
 			c.font = xfont.weight + b + xfont.size + "px" + b + xfont.family;  
-		} else {		
-			c.font = "bold 12px sans-serif";
+		} else {	
+			var fs = 12; 		
+			if (adjustableTextFontSize) {
+				fs = getAdjustableTitleFontSize();
+			}
+			c.font = "bold " + fs + "px sans-serif";
 		}	   			
 			
 		if (writeFrom) {
@@ -406,8 +423,15 @@ function drawInit() {
 			f.size = 12;
 			f.family = "sans-serif";
 		}
+		if (adjustableTextFontSize) {
+			f.size=getAdjustableTitleFontSize();
+		}
 		c.font = f.weight + b + f.size + "px" + b + f.family;   		
-		titleSpace = +20 + +f.size;
+		var titlePadding = 20;
+		if (adjustableTextFontSize) {
+			titlePadding = getAdjustableTitleFontSize()/2;
+		}
+		titleSpace = +titlePadding + +f.size;		
 		 
 		var alignment = obj.title.alignment;
 		if (alignment === undefined) {
@@ -423,7 +447,11 @@ function drawInit() {
 			xTitle = canvas.width/2- c.measureText(obj.title.text).width/2;
 		}				
 		
-		c.fillText(obj.title.text, xTitle , 20+titleSpace/2 );    
+		var titlePadding = 20;
+		if (adjustableTextFontSize) {
+			titlePadding = getAdjustableTitleFontSize()/2;
+		}
+		c.fillText(obj.title.text, xTitle , titlePadding+titleSpace/2 );    
 		c.font = font;   				
 	} else {
 		titleSpace = 0;
@@ -468,7 +496,14 @@ function getTitleSpace() {
 		if (f === undefined) {			
 			f.size = 12;			
 		}		      
-		space = +20 + +f.size;  
+		if (adjustableTextFontSize) {
+			f.size=getAdjustableTitleFontSize();
+		}
+        var titlePadding = 20;
+        if (adjustableTextFontSize) {
+        	titlePadding = getAdjustableTitleFontSize();
+        }
+		space = +titlePadding + +f.size; 
 	} 
 	return space;
 }
@@ -476,7 +511,10 @@ function getTitleSpace() {
 function getLabelHeight() {
 	var fontHeight = 12;
 	if (obj.xData !== undefined) {		
-		fontHeight = obj.xData.font.size;		 
+		fontHeight = obj.xData.font.size;			
+	}
+	if (adjustableTextFontSize) {
+		fontHeight=getAdjustableTitleFontSize();
 	}
 	return fontHeight;
 }
@@ -489,11 +527,17 @@ function getMaxLabelWidth() {
 	var max = 0;	
 	if (obj.xData !== undefined) {		 
 		var b = " ";
-		var xfont = obj.xData.font;
-		fontHeight = xfont.size;
+		var xfont = obj.xData.font;		
+		if (adjustableTextFontSize) {
+			xfont.size=getAdjustableTitleFontSize();
+		}
 		c.font = xfont.weight + b + xfont.size + "px" + b + xfont.family;  
-	} else {		
-		c.font = "bold 12px sans-serif";
+	} else {	
+		var fs = 12;
+		if (adjustableTextFontSize) {
+			fs=getAdjustableTitleFontSize();
+		}
+		c.font = "bold " + fs + "px sans-serif";
 	}	   					
 	for(var i=0; i<labels.length; i++) {   
 		var size = c.measureText(labels[i]).width+5;		
@@ -574,6 +618,9 @@ function getFontHeight() {
 		var xfont = obj.xData.font;
 		fontHeight = xfont.size;		  
 	}    	
+	if (adjustableTextFontSize) {
+		fontHeight = getAdjustableTitleFontSize();
+	}
 	return fontHeight;
 }
 
@@ -589,6 +636,13 @@ function isRightCadran(i, pieData) {
 	return yes;
 }
 
+function getAdjustableTitleFontSize() {
+	return canvas.width/25;	
+}
+
+function getAdjustableLabelFontSize() {
+	return canvas.width/45;	
+}
 
 drawPie(myjson, idCan, idTipCan, canWidth, canHeight);
 

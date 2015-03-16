@@ -157,6 +157,10 @@ var dotRadius = 3;
 var tickInit;
 var resizeWidth = false;
 var resizeHeight = false;
+//by default chart title, legends and axis values strings have a defined font size
+//if we want to have font size scaled accordingly with chart width then this property must be true 
+//(such example may be when we want to show the chart on a big monitor)
+var adjustableTextFontSize = false;
 
 function drawLine(myjson, idCan, idTipCan, canWidth, canHeight) {	
 			
@@ -230,6 +234,11 @@ function drawLine(myjson, idCan, idTipCan, canWidth, canHeight) {
 	if (typeof message === "undefined") {		
 		message = "#val";		
 	}
+	
+	adjustableTextFontSize = obj.adjustableTextFontSize;
+	if (typeof adjustableTextFontSize === "undefined") {
+		adjustableTextFontSize = false;
+	}	
 	
 	tickCount = obj.tickCount;
 	if (typeof tickCount === "undefined") {
@@ -353,6 +362,25 @@ function updateSize(canWidth, canHeight) {
     
 	// space between 2 ticks
 	tickStep = (realHeight-step-tickInit)/tickCount;	  
+	
+	if (adjustableTextFontSize) {						
+	    var objStep = calculateYStep(min, max, tickCount);
+	    yStep = objStep.yStep;
+	    minValY = objStep.minValY;
+	    maxValY = objStep.maxValY;
+	    
+	    // compute hStep (for vertical labels and yLegend to fit) 
+	    hStep = computeHStep(maxValY, yStep, true);
+	    
+	    if (obj.dualYaxis) {
+	    	var objStep2 = calculateYStep(min2, max2, tickCount);
+		    y2Step = objStep2.yStep;
+		    minValY2 = objStep2.minValY;
+		    maxValY2 = objStep2.maxValY; 
+		    
+		    hStep2 = computeHStep(maxValY2, y2Step, false);		    
+	    }		   
+	}
 }
 
 
@@ -500,8 +528,15 @@ function drawInit() {
 			f.size = 12;
 			f.family = "sans-serif";
 		}
+		if (adjustableTextFontSize) {
+			f.size=getAdjustableTitleFontSize();
+		}
 		c.font = f.weight + b + f.size + "px" + b + f.family;   		
-		titleSpace = +20 + +f.size;
+		var titlePadding = 20;
+		if (adjustableTextFontSize) {
+			titlePadding = getAdjustableTitleFontSize()/2;
+		}
+		titleSpace = +titlePadding + +f.size;		
 		 
 		var alignment = obj.title.alignment;
 		if (alignment === undefined) {
@@ -517,7 +552,11 @@ function drawInit() {
 			xTitle = canvas.width/2- c.measureText(obj.title.text).width/2;
 		}				
 		
-		c.fillText(obj.title.text, xTitle , 20+titleSpace/2 );    
+		var titlePadding = 20;
+		if (adjustableTextFontSize) {
+			titlePadding = getAdjustableTitleFontSize()/2;
+		}
+		c.fillText(obj.title.text, xTitle , titlePadding+titleSpace/2 );    
 		c.font = font;   				
 	} else {
 		titleSpace = 10;
@@ -539,8 +578,15 @@ function drawInit() {
 			f.size = 12;
 			f.family = "sans-serif";
 		}
-		c.font = f.weight + b + f.size + "px" + b + f.family;      
-		xLegendSpace = +20 + +f.size;             					
+		if (adjustableTextFontSize) {
+			f.size = getAdjustableLabelFontSize();
+		}
+		c.font = f.weight + b + f.size + "px" + b + f.family;     
+		var legendPadding = 20;
+		if (adjustableTextFontSize) {
+			legendPadding = getAdjustableLabelFontSize()/2;
+		}
+		xLegendSpace = +legendPadding + +f.size;             					
 		
 		c.fillText(obj.xLegend.text, realWidth/2- c.measureText(obj.xLegend.text).width/2 , realHeight - f.size );    
 		c.font = font;   	
@@ -560,6 +606,9 @@ function drawInit() {
 			f.weight = "bold";
 			f.size = 12;
 			f.family = "sans-serif";
+		}
+		if (adjustableTextFontSize) {
+			f.size = getAdjustableLabelFontSize();
 		}
 		c.font = f.weight + b + f.size + "px" + b + f.family;      
 		c.fillStyle = yLegendColor;		
@@ -587,6 +636,9 @@ function drawInit() {
 			f.size = 12;
 			f.family = "sans-serif";
 		}
+		if (adjustableTextFontSize) {
+			f.size = getAdjustableLabelFontSize();
+		}
 		c.font = f.weight + b + f.size + "px" + b + f.family;      
 		c.fillStyle = y2LegendColor;		
 		c.save();	    	
@@ -605,18 +657,33 @@ function drawInit() {
 	if (typeof obj.legend !== "undefined") {         
 		var x = hStep;		
 		c.font = "bold 10px sans-serif";
-		legendSpace = 20; 
-		var legendY = titleSpace+20;
+		if (adjustableTextFontSize) {
+			c.font = "bold " + getAdjustableLabelFontSize() + "px sans-serif";
+		}		 
+		var legendPadding = 20;		
+		if (adjustableTextFontSize) {
+			legendPadding = getAdjustableLabelFontSize();
+		}	
+		legendSpace = legendPadding;
+		var legendY = titleSpace+legendPadding;								
 		c.globalAlpha = globalAlpha;
 		for (var k=0; k<series; k++) {        
 			c.fillStyle = seriesColor[k];        
-			var legendWidth = c.measureText(obj.legend[k]).width + 24;             
+			var legendWidth = c.measureText("---- " + obj.legend[k]).width + 24;             
 						
 			if (x + legendWidth > realWidth) {
 				// draw legend on next line if does not fit on current one
 				x = hStep;
-				legendY = legendY + 14;				
-				legendSpace += 20;				
+				var lineSpace = 14;
+				if (adjustableTextFontSize) {
+					lineSpace = getAdjustableLabelFontSize();
+				}
+				legendY = legendY + lineSpace;
+				var legendPadding = 20;		
+				if (adjustableTextFontSize) {
+					legendPadding = getAdjustableLabelFontSize();
+				}
+				legendSpace += legendPadding;						
 			}    
 					
 			c.fillText("---- " + obj.legend[k], x, legendY);
@@ -653,6 +720,9 @@ function drawLabels(xLabelWidth) {
 			c.fillStyle = obj.yData.color; 
 			var b = " ";
 			var yfont = obj.yData.font;
+			if (adjustableTextFontSize) {
+				yfont.size=getAdjustableLabelFontSize();
+			}
 			c.font = yfont.weight + b + yfont.size + "px" + b + yfont.family;  
 		}
 		for(var i=0; i<tickCount+1; i++) {        		
@@ -707,6 +777,9 @@ function drawLabels(xLabelWidth) {
 			c.fillStyle = obj.xData.color; 
 			var b = " ";
 			var xfont = obj.xData.font;
+			if (adjustableTextFontSize) {
+				xfont.size=getAdjustableLabelFontSize();
+			}
 			c.font = xfont.weight + b + xfont.size + "px" + b + xfont.family;  
 		}		
 		for(var i=0; i<labels.length; i++) {   
@@ -871,7 +944,10 @@ function computeHStep(maxValY, yStep, takeCare) {
 	if (showTicks) {
 		var maxLabelWidth = 0;	
 		if (typeof obj.yData !== "undefined") {	 		
-			var yfont = obj.yData.font;		
+			var yfont = obj.yData.font;	
+			if (adjustableTextFontSize) {
+				yfont.size=getAdjustableLabelFontSize();
+			}
 			var b = " ";
 			c.font = yfont.weight + b + yfont.size + "px" + b + yfont.family;  		
 		}
@@ -897,6 +973,9 @@ function computeHStep(maxValY, yStep, takeCare) {
 				f.size = 12;
 				f.family = "sans-serif";
 			}
+			if (adjustableTextFontSize) {
+				f.size = getAdjustableLabelFontSize();
+			}	
 			c.font = f.weight + b + f.size + "px" + b + f.family;      
 			y2LegendSpace = f.size;		    
 			c.font = font;            
@@ -916,8 +995,15 @@ function computeHStep(maxValY, yStep, takeCare) {
 				f.size = 12;
 				f.family = "sans-serif";
 			}
+			if (adjustableTextFontSize) {
+				f.size = getAdjustableLabelFontSize();
+			}	
 			c.font = f.weight + b + f.size + "px" + b + f.family;      
-			yLegendSpace = +20 + +f.size;		    
+			var legendPadding = 20;		
+			if (adjustableTextFontSize) {
+				legendPadding = getAdjustableLabelFontSize();
+			}
+			yLegendSpace = +legendPadding + +f.size;							    
 			c.font = font;            
 			result += yLegendSpace;
 		}
@@ -926,6 +1012,9 @@ function computeHStep(maxValY, yStep, takeCare) {
 		if (obj.xData !== undefined) {		
 			var b = " ";
 			var xfont = obj.xData.font;
+			if (adjustableTextFontSize) {
+				xfont.size=getAdjustableLabelFontSize();
+			}
 			c.font = xfont.weight + b + xfont.size + "px" + b + xfont.family;  
 		}		
 		var minPos = new Array();
@@ -959,7 +1048,10 @@ function computeHStep(maxValY, yStep, takeCare) {
 function computeVStep() {
 	var xLabelWidth = 0;
 	if (typeof obj.xData !== "undefined") {	 		
-		var xfont = obj.xData.font;		
+		var xfont = obj.xData.font;	
+		if (adjustableTextFontSize) {
+			xfont.size=getAdjustableLabelFontSize();
+		}
 		var b = " ";
 		c.font = xfont.weight + b + xfont.size + "px" + b + xfont.family;  		
 	}
@@ -979,9 +1071,16 @@ function computeVStep() {
 			f.size = 12;
 			f.family = "sans-serif";
 		}		      
-		_xLegendSpace = +20 + +f.size;  
+		if (adjustableTextFontSize) { 
+			f.size = getAdjustableLabelFontSize();
+		}
+        var legendPadding = 20;		
+		if (adjustableTextFontSize) {
+			legendPadding = getAdjustableLabelFontSize();
+		}
+		_xLegendSpace = +legendPadding + +f.size;  
 	}		
-	if (step < xLabelWidth+_xLegendSpace) {    
+	if ((step < xLabelWidth+_xLegendSpace) || adjustableTextFontSize) {    
 	    step = xLabelWidth+_xLegendSpace;	    		
 	}	
 	return xLabelWidth;
@@ -994,6 +1093,9 @@ function computeXLabelSpace(label) {
 	if (labelOrientation === "horizontal") {
 	   	if (typeof obj.xData !== "undefined") {	 	
 	   		_labelWidth =  obj.xData.font.size + 20;
+	   		if (adjustableTextFontSize) {
+	    		_labelWidth=getAdjustableLabelFontSize() + 20;
+	    	}
 	   	} else {
 	   		_labelWidth = 12 + 20;
 	   	}	
@@ -1013,7 +1115,14 @@ function getTitleSpace() {
 		if (f === undefined) {			
 			f.size = 12;			
 		}		      
-		space = +20 + +f.size;  
+		if (adjustableTextFontSize) {
+			f.size=getAdjustableTitleFontSize();
+		}
+        var titlePadding = 20;
+        if (adjustableTextFontSize) {
+        	titlePadding = getAdjustableTitleFontSize();
+        }
+		space = +titlePadding + +f.size;
 	} 
 	return space;
 }
@@ -1025,7 +1134,12 @@ function getXLegendSpace() {
 		if (f === undefined) {			
 			f.size = 12;			
 		}		      
-		_xLegendSpace = +20 + +f.size;
+		var legendPadding = 20;
+        if (adjustableTextFontSize) {  
+			f.size = getAdjustableLabelFontSize();
+			legendPadding = getAdjustableLabelFontSize();
+		}        				
+		_xLegendSpace = +legendPadding + +f.size;
 	}
 	return _xLegendSpace;
 }
@@ -1036,15 +1150,30 @@ function getLegendSpace() {
 	if (typeof obj.legend !== "undefined") {         
 		var x = hStep;		
 		c.font = "bold 10px sans-serif";		
-		var legendY = getTitleSpace()+20;		
+		if (adjustableTextFontSize) {
+			c.font ="bold " + getAdjustableLabelFontSize() + "px sans-serif"; 
+		}
+        var legendPadding = 20;
+		if (adjustableTextFontSize) {
+			legendPadding = getAdjustableLabelFontSize()/2;
+		}
+		var legendY = getTitleSpace()+legendPadding;	
 		for (var k=0; k<series; k++) {        			        
 			var legendWidth = c.measureText(obj.legend[k]).width + 24;             			
 			
 			if (x + legendWidth > realWidth) {
 				// draw legend on next line if does not fit on current one
 				x = hStep;
-				legendY = legendY + 14;				
-				_legendSpace += 20;				
+				var lineSpace = 14;
+				if (adjustableTextFontSize) {
+					lineSpace = getAdjustableLabelFontSize();
+				}	
+				legendY = legendY + lineSpace;		
+				var pad = 20;
+				if (adjustableTextFontSize) {
+					pad = getAdjustableLabelFontSize();
+				}	
+				_legendSpace += pad;				
 			}    
 											     
 			x = x + legendWidth;			 
@@ -1072,6 +1201,14 @@ function resizeCanvas() {
 		updateSize(w, h);
 		drawChart();
 	}
+}
+
+function getAdjustableTitleFontSize() {
+	return canvas.width/25;	
+}
+
+function getAdjustableLabelFontSize() {
+	return canvas.width/45;	
 }
 
 drawLine(myjson, idCan, idTipCan, canWidth, canHeight);
