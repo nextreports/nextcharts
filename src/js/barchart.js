@@ -167,6 +167,7 @@ var resizeHeight = false;
 // if we want to have font size scaled accordingly with chart width then this property must be true 
 // (such example may be when we want to show the chart on a big monitor)
 var adjustableTextFontSize = false;
+var maxLabelWidth = 0;	
 
 function drawBar(myjson, idCan, idTipCan, canWidth, canHeight) {	
 					
@@ -1134,6 +1135,9 @@ function drawInit() {
 			titleSpace = +titlePadding + +f.size;				
 		} else {			
 			titleSpace = 10;
+			if (yLegendSpace == 0) {
+				titleSpace = 20;
+			}
 			if (adjustableTextFontSize) {
 				titleSpace = getAdjustableTitleFontSize()/4;
 			}
@@ -1158,7 +1162,7 @@ function drawInit() {
 			c.scale(1, -1);
 			var xoff = 0;			
 			if (chartType == "hstackedbar") {
-				xoff = 7;
+				xoff = 11;
 			} else {				
 				xoff = 11;
 			}
@@ -1178,6 +1182,9 @@ function drawInit() {
 		}		
 		
 		var titlePadding = 20;
+		if (isH(chartType) && (yLegendSpace == 0)) {
+			titlePadding = 40;
+		}
 		if (adjustableTextFontSize) {
 			titlePadding = getAdjustableTitleFontSize()/2;
 		}
@@ -1343,9 +1350,15 @@ function drawInit() {
 				c.scale(1, -1);		
 				var xoff = 0;			
 				if (chartType == "hstackedbar") {
-					xoff = 28;
+					xoff = 24;
+					if (typeof obj.title === "undefined") {
+						xoff = 4;
+					}
 				} else {				
-					xoff = 26;
+					xoff = 23;
+					if (typeof obj.title === "undefined") {
+						xoff = 3;
+					}
 				}
 				c.translate(realWidth+hStep/2+xoff - yLegendSpace/2+legendSpace, -realHeight/2);
 				c.rotate(Math.PI/2);
@@ -1462,8 +1475,18 @@ function drawLabels(xLabelWidth) {
 						size=getAdjustableLabelFontSize();
 					}
 				}
-				c.scale(-1,1);			
-				c.translate(-realHeight + step -5 - yLegendSpace + (tickCount-i)*tickStep, i*tickStep +  tickInit + hStep + 1 - 5*labelWidth/6 + step - xLabelWidth - xLegendSpace + legendSpace - size/4);	
+				c.scale(-1,1);						
+				var m = yLegendSpace;
+				if (m == 0) {
+					m = 0;							
+				} else if (xLegendSpace != 0) {
+					m = 30;					
+				}					
+				var t = 0;
+				if ((obj.title === undefined) && (yLegendSpace == 0)) {	
+					t = maxLabelWidth/3;
+				}
+				c.translate(-realHeight + step - maxLabelWidth/2 - m  + (tickCount-i)*tickStep, i*tickStep +  tickInit + hStep + 1 - labelWidth/3 -yLegendSpace/4-t  + step - xLabelWidth - xLegendSpace + legendSpace - size/4);	
 				c.rotate(-Math.PI/2);							
 			}
 			
@@ -1694,7 +1717,7 @@ function computeHStep(maxValY, yStep, takeCare) {
 	var result;
 	var font = c.font;
 	if (showTicks) {
-		var maxLabelWidth = 0;	
+		maxLabelWidth = 0;	
 		if (typeof obj.yData !== "undefined") {	 		
 			var yfont = obj.yData.font;		
 	        if (adjustableTextFontSize) {
