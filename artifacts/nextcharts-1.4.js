@@ -447,6 +447,7 @@ function find(array, v) {
  *   "message" : "Value \: #val", 
  *   "showTicks" : true,
  *   "tickCount" : 5, 
+ *   "startingFromZero" : false,
  *   "title" : {
  *   	"text": "Analiza financiara", 
  *   	"font": {
@@ -527,6 +528,7 @@ var background;
 var message;
 var tickCount;
 var showTicks;
+var startingFromZero;
 var chartType;
 var chartStyle;
 var seriesColor;
@@ -638,6 +640,11 @@ function drawBar(myjson, idCan, idTipCan, canWidth, canHeight) {
 		showTicks = true;
 	}	
 	
+	startingFromZero = obj.startingFromZero;
+	if (typeof startingFromZero === "undefined") {
+		startingFromZero = false;
+	}	
+	
 	showGridX = obj.showGridX;
 	if (typeof showGridX === "undefined") {
         showGridX = true;
@@ -709,6 +716,9 @@ function drawBar(myjson, idCan, idTipCan, canWidth, canHeight) {
         max = Math.max.apply( Math, maxK);	    
     }  
     min = Math.min.apply( Math, minK);
+    if (startingFromZero && (min > 0)) {
+    	min = 0;
+    } 
     if (obj.lineData !== undefined) {
     	var lineMaxK = new Array(); 
     	var lineMinK = new Array();
@@ -772,6 +782,9 @@ function drawBar(myjson, idCan, idTipCan, canWidth, canHeight) {
 		    max2 = Math.max.apply( Math, maxK2);	         
 		    min2 = Math.min.apply( Math, minK2);
 		}
+		if (startingFromZero && (min2 > 0)) {
+	    	min2 = 0;
+	    } 
 		
 		var objStep2 = calculateYStep(min2, max2, tickCount);
 	    y2Step = objStep2.yStep;
@@ -2481,6 +2494,7 @@ drawBar(myjson, idCan, idTipCan, canWidth, canHeight);
  *   "message" : "Value \: #val", 
  *   "showTicks" : true,
  *   "tickCount" : 5, 
+ *   "startingFromZero" : false,
  *   "title" : {
  *   	"text": "Analiza financiara", 
  *   	"font": {
@@ -2561,6 +2575,7 @@ var background;
 var message;
 var tickCount;
 var showTicks;
+var startingFromZero;
 var chartType;
 var chartStyle;
 var seriesColor;
@@ -2666,6 +2681,11 @@ function drawLine(myjson, idCan, idTipCan, canWidth, canHeight) {
 		showTicks = true;
 	}	
 	
+	startingFromZero = obj.startingFromZero;
+	if (typeof startingFromZero === "undefined") {
+		startingFromZero = false;
+	}	
+	
 	showGridX = obj.showGridX;
 	if (typeof showGridX === "undefined") {
         showGridX = true;
@@ -2721,6 +2741,9 @@ function drawLine(myjson, idCan, idTipCan, canWidth, canHeight) {
 	}    	
     max = Math.max.apply( Math, maxK);	         
     min = Math.min.apply( Math, minK);
+    if (startingFromZero && (min > 0)) {
+    	min = 0;
+    } 
     
     var objStep = calculateYStep(min, max, tickCount);
     yStep = objStep.yStep;
@@ -2743,6 +2766,9 @@ function drawLine(myjson, idCan, idTipCan, canWidth, canHeight) {
 		}    	
 	    max2 = Math.max.apply( Math, maxK2);	         
 	    min2 = Math.min.apply( Math, minK2);
+	    if (startingFromZero && (min2 > 0)) {
+	    	min2 = 0;
+	    } 
 		
 		var objStep2 = calculateYStep(min2, max2, tickCount);
 	    y2Step = objStep2.yStep;
@@ -4487,6 +4513,7 @@ drawPie(myjson, idCan, idTipCan, canWidth, canHeight);
  *   "message" : "Value \: #val", 
  *   "showTicks" : true,
  *   "tickCount" : 5, 
+ *   "startingFromZero" : false,
  *   "title" : {
  *   	"text": "Correlation between life expectancy, fertility rate and population", 
  *   	"font": {
@@ -4555,6 +4582,7 @@ var background;
 var message;
 var tickCount;
 var showTicks;
+var startingFromZero;
 var chartType;
 var chartStyle;
 var seriesColor;
@@ -4648,6 +4676,11 @@ function drawBubble(myjson, idCan, idTipCan, canWidth, canHeight) {
 		showTicks = true;
 	}	
 	
+	startingFromZero = obj.startingFromZero;
+	if (typeof startingFromZero === "undefined") {
+		startingFromZero = false;
+	}	
+	
 	showGridX = obj.showGridX;
 	if (typeof showGridX === "undefined") {
         showGridX = true;
@@ -4686,6 +4719,9 @@ function drawBubble(myjson, idCan, idTipCan, canWidth, canHeight) {
 	// compute Y min ,max values	    	
     max = Math.max.apply( Math, obj.data[1]);	         
     min = Math.min.apply( Math, obj.data[1]);
+    if (startingFromZero && (min > 0)) {
+    	min = 0;
+    } 
     
     var objStep = calculateYStep(min, max, tickCount);
     yStep = objStep.yStep;

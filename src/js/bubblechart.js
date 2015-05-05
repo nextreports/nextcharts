@@ -35,6 +35,7 @@
  *   "message" : "Value \: #val", 
  *   "showTicks" : true,
  *   "tickCount" : 5, 
+ *   "startingFromZero" : false,
  *   "title" : {
  *   	"text": "Correlation between life expectancy, fertility rate and population", 
  *   	"font": {
@@ -103,6 +104,7 @@ var background;
 var message;
 var tickCount;
 var showTicks;
+var startingFromZero;
 var chartType;
 var chartStyle;
 var seriesColor;
@@ -196,6 +198,11 @@ function drawBubble(myjson, idCan, idTipCan, canWidth, canHeight) {
 		showTicks = true;
 	}	
 	
+	startingFromZero = obj.startingFromZero;
+	if (typeof startingFromZero === "undefined") {
+		startingFromZero = false;
+	}	
+	
 	showGridX = obj.showGridX;
 	if (typeof showGridX === "undefined") {
         showGridX = true;
@@ -234,6 +241,9 @@ function drawBubble(myjson, idCan, idTipCan, canWidth, canHeight) {
 	// compute Y min ,max values	    	
     max = Math.max.apply( Math, obj.data[1]);	         
     min = Math.min.apply( Math, obj.data[1]);
+    if (startingFromZero && (min > 0)) {
+    	min = 0;
+    } 
     
     var objStep = calculateYStep(min, max, tickCount);
     yStep = objStep.yStep;
