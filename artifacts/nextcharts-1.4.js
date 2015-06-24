@@ -422,6 +422,7 @@ function find(array, v) {
  *         -> can contain <br> to split text on more lines
  * title.alignment -> center, left, right
  * y2Count -> number of last series represented on dual y2 axis
+ * styleGridX, styleGridY -> line, dot, dash
  * onClick -> is a javascript function like 'function doClick(value){ ...}'  *            
  * 
  * 
@@ -444,6 +445,8 @@ function find(array, v) {
  *   "showLabels": true,
  *   "colorGridX": "rgb(248, 248, 216)", 
  *   "colorGridY": "rgb(248, 248, 216)", 
+ *   "styleGridX": "line",
+ *   "styleGridY": "line",
  *   "message" : "Value \: #val", 
  *   "showTicks" : true,
  *   "tickCount" : 5, 
@@ -2018,6 +2021,13 @@ function drawGrid() {
 			
 	// draw  horizontal grid  (for Y labels)
 	if (showGridY) {
+		if (obj.styleGridY !== "undefined") {
+			if (obj.styleGridY == "dot") {
+				c.setLineDash([1, 3]);
+			} else if (obj.styleGridY == "dash") {
+				c.setLineDash([5, 8]);
+			} 	
+		}	
 		for(var i=0; i<tickCount+1; i++) {        			    	    	    
 	    	var xColor = c.strokeStyle;
 	    	if (obj.colorGridY !== "undefined") {
@@ -2035,11 +2045,19 @@ function drawGrid() {
 	        c.stroke();
 	        c.lineWidth = 2.0;   
 	        c.strokeStyle = xColor;
-	    }    
+	    }   
+		c.setLineDash([]);
 	} 	
 	
 	// draw  vertical grid  (for X labels)
     if (showGridX) {
+    	if (obj.styleGridX !== "undefined") {
+			if (obj.styleGridX == "dot") {
+				c.setLineDash([1, 3]);
+			} else if (obj.styleGridX == "dash") {
+				c.setLineDash([5, 8]);
+			} 	
+		}	
     	for(var i=0; i<labels.length; i++) {   
     		var middleX = hStep + i*(realWidth-hStep-hStep2 )/data.length + (realWidth - hStep - hStep2 - gap*(1+Math.sqrt(series)))/data.length/2;	    	    
 	    	var yColor = c.strokeStyle;
@@ -2055,6 +2073,7 @@ function drawGrid() {
 	        c.lineWidth = 2.0;   
 	        c.strokeStyle = yColor;
 	    }    
+    	c.setLineDash([]);
 	}  	
 	
 }
@@ -2473,6 +2492,7 @@ drawBar(myjson, idCan, idTipCan, canWidth, canHeight);
  *         -> can contain <br> to split text on more lines
  * title.alignment -> center, left, right
  * y2Count -> number of last series represented on dual y2 axis
+ * styleGridX, styleGridY -> line, dot, dash
  * onClick -> is a javascript function like 'function doClick(value){ ...}'  *            
  * 
  * { "type": "line", "area"
@@ -2491,6 +2511,8 @@ drawBar(myjson, idCan, idTipCan, canWidth, canHeight);
  *   "showLabels": true,
  *   "colorGridX": "rgb(248, 248, 216)", 
  *   "colorGridY": "rgb(248, 248, 216)", 
+ *   "styleGridX": "line",
+ *   "styleGridY": "line",
  *   "message" : "Value \: #val", 
  *   "showTicks" : true,
  *   "tickCount" : 5, 
@@ -3299,6 +3321,13 @@ function drawGrid() {
 			
 	// draw  horizontal grid  (for Y labels)
 	if (showGridY) {
+		if (obj.styleGridY !== "undefined") {
+			if (obj.styleGridY == "dot") {
+				c.setLineDash([1, 3]);
+			} else if (obj.styleGridY == "dash") {
+				c.setLineDash([5, 8]);
+			} 	
+		}		
 		for(var i=0; i<tickCount+1; i++) {        			    	    	    
 	    	var xColor = c.strokeStyle;
 	    	if (obj.colorGridY !== "undefined") {
@@ -3317,10 +3346,18 @@ function drawGrid() {
 	        c.lineWidth = 2.0;   
 	        c.strokeStyle = xColor;
 	    }    
+		c.setLineDash([]);
 	} 	
 	
 	// draw  vertical grid  (for X labels)
     if (showGridX) {
+    	if (obj.styleGridX !== "undefined") {
+			if (obj.styleGridX == "dot") {
+				c.setLineDash([1, 3]);
+			} else if (obj.styleGridX == "dash") {
+				c.setLineDash([5, 8]);
+			} 	
+		}	
     	for(var i=0; i<labels.length; i++) {   
     		var middleX = hStep + i*(realWidth-hStep-hStep2 )/data.length + (realWidth - hStep - hStep2 - gap*(1+Math.sqrt(series)))/data.length/2;	    	    
 	    	var yColor = c.strokeStyle;
@@ -3335,7 +3372,8 @@ function drawGrid() {
 	        c.stroke();
 	        c.lineWidth = 2.0;   
 	        c.strokeStyle = yColor;
-	    }    
+	    }  
+    	c.setLineDash([]);
 	}  	
 	
 }
@@ -4486,6 +4524,7 @@ drawPie(myjson, idCan, idTipCan, canWidth, canHeight);
  * message -> can have markup #val for value, #x for x value, #z for size value, #c for category value, #label for id label
  *         -> can contain <br> to split text on more lines
  * title.alignment -> center, left, right
+ * styleGridX, styleGridY -> line, dot, dash
  * onClick -> is a javascript function like 'function doClick(value){ ...}' 
  * 
  * data contains : x, y, z 
@@ -4510,6 +4549,8 @@ drawPie(myjson, idCan, idTipCan, canWidth, canHeight);
  *   "showLabels": true,
  *   "colorGridX": "rgb(248, 248, 216)", 
  *   "colorGridY": "rgb(248, 248, 216)", 
+ *   "styleGridX": "line",
+ *   "styleGridY": "line",
  *   "message" : "Value \: #val", 
  *   "showTicks" : true,
  *   "tickCount" : 5, 
@@ -5249,6 +5290,13 @@ function drawGrid() {
 			
 	// draw  horizontal grid  (for Y labels)
 	if (showGridY) {
+		if (obj.styleGridY !== "undefined") {
+			if (obj.styleGridY == "dot") {
+				c.setLineDash([1, 3]);
+			} else if (obj.styleGridY == "dash") {
+				c.setLineDash([5, 8]);
+			} 	
+		}	
 		for(var i=0; i<tickCount+1; i++) {        			    	    	    
 	    	var xColor = c.strokeStyle;
 	    	if (obj.colorGridY !== "undefined") {
@@ -5262,11 +5310,19 @@ function drawGrid() {
 	        c.stroke();
 	        c.lineWidth = 2.0;   
 	        c.strokeStyle = xColor;
-	    }    
+	    }   
+		c.setLineDash([]);
 	} 	
 	
 	// draw  vertical grid  (for X labels)
     if (showGridX) {
+    	if (obj.styleGridX !== "undefined") {
+			if (obj.styleGridX == "dot") {
+				c.setLineDash([1, 3]);
+			} else if (obj.styleGridX == "dash") {
+				c.setLineDash([5, 8]);
+			} 	
+		}	
     	for(var i=0; i<labels.length; i++) {   
     		var middleX = hStep + i*(realWidth-hStep )/labels.length + (realWidth - hStep - gap*2)/labels.length/2;	    	    
 	    	var yColor = c.strokeStyle;
@@ -5281,7 +5337,8 @@ function drawGrid() {
 	        c.stroke();
 	        c.lineWidth = 2.0;   
 	        c.strokeStyle = yColor;
-	    }    
+	    }   
+    	c.setLineDash([]);
 	}  	
 	
 }

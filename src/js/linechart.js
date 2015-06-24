@@ -9,6 +9,7 @@
  *         -> can contain <br> to split text on more lines
  * title.alignment -> center, left, right
  * y2Count -> number of last series represented on dual y2 axis
+ * styleGridX, styleGridY -> line, dot, dash
  * onClick -> is a javascript function like 'function doClick(value){ ...}'  *            
  * 
  * { "type": "line", "area"
@@ -27,6 +28,8 @@
  *   "showLabels": true,
  *   "colorGridX": "rgb(248, 248, 216)", 
  *   "colorGridY": "rgb(248, 248, 216)", 
+ *   "styleGridX": "line",
+ *   "styleGridY": "line",
  *   "message" : "Value \: #val", 
  *   "showTicks" : true,
  *   "tickCount" : 5, 
@@ -835,6 +838,13 @@ function drawGrid() {
 			
 	// draw  horizontal grid  (for Y labels)
 	if (showGridY) {
+		if (obj.styleGridY !== "undefined") {
+			if (obj.styleGridY == "dot") {
+				c.setLineDash([1, 3]);
+			} else if (obj.styleGridY == "dash") {
+				c.setLineDash([5, 8]);
+			} 	
+		}		
 		for(var i=0; i<tickCount+1; i++) {        			    	    	    
 	    	var xColor = c.strokeStyle;
 	    	if (obj.colorGridY !== "undefined") {
@@ -853,10 +863,18 @@ function drawGrid() {
 	        c.lineWidth = 2.0;   
 	        c.strokeStyle = xColor;
 	    }    
+		c.setLineDash([]);
 	} 	
 	
 	// draw  vertical grid  (for X labels)
     if (showGridX) {
+    	if (obj.styleGridX !== "undefined") {
+			if (obj.styleGridX == "dot") {
+				c.setLineDash([1, 3]);
+			} else if (obj.styleGridX == "dash") {
+				c.setLineDash([5, 8]);
+			} 	
+		}	
     	for(var i=0; i<labels.length; i++) {   
     		var middleX = hStep + i*(realWidth-hStep-hStep2 )/data.length + (realWidth - hStep - hStep2 - gap*(1+Math.sqrt(series)))/data.length/2;	    	    
 	    	var yColor = c.strokeStyle;
@@ -871,7 +889,8 @@ function drawGrid() {
 	        c.stroke();
 	        c.lineWidth = 2.0;   
 	        c.strokeStyle = yColor;
-	    }    
+	    }  
+    	c.setLineDash([]);
 	}  	
 	
 }
