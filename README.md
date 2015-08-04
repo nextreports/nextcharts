@@ -35,7 +35,6 @@ You can find information about NextCharts on following links:
 
 1. NextReports Blog: http://blog.next-reports.com/
 2. NextReports Site: http://next-reports.com/
-
      _   _           _   _____ _                _       
     | \ | |         | | /  __ \ |              | |      
     |  \| | _____  _| |_| /  \/ |__   __ _ _ __| |_ ___ 
