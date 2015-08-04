@@ -1,14 +1,8 @@
 #NextCharts
-     _   _           _   _____ _                _       
-    | \ | |         | | /  __ \ |              | |      
-    |  \| | _____  _| |_| /  \/ |__   __ _ _ __| |_ ___ 
-    | . \ |/ _ \ \/ / __| |   | '_ \ / _` | '__| __/ __|
-    | |\  |  __/>  <| |_| \__/\ | | | (_| | |  | |_\__ \
-    \_| \_/\___/_/\_\\__|\____/_| |_|\__,_|_|   \__|___/
-                                                                                                        
-Open source HTML5 charts using the canvas tag. This library is used by [NextReports](https://github.com/nextreports/nextreports) from version 7.
 
-Following type of charts & styles can be defined (where h is for horizontal):  
+NextCharts is an open source HTML5 charts library which uses the canvas tag for drawing. This library is used by [NextReports](https://github.com/nextreports/nextreports) from version 7.
+
+Following types of charts & styles can be defined (where h stands for horizontal):  
   
 * __bar__ : normal, glass, dome, cylinder, parallelepiped, combo with lines  
 * __stackedbar__ : normal, glass, dome, cylinder, parallelepiped  
@@ -19,9 +13,9 @@ Following type of charts & styles can be defined (where h is for horizontal):
 * __pie__  
 * __bubble__
 
-NextCharts supports dual axis definition and it allows to have a combo chart with bars and lines. 
-
 ![alt tag](http://2.bp.blogspot.com/-ouJicYwR4D0/Uv3pAiWORgI/AAAAAAAAJDo/a6RxWpXU3QM/s1600/NextServerCharts-white.png)
+
+NextCharts supports dual axis definition and it allows to have a combo chart with bars and lines. As opposite to other charts libraries, tooltips are seen only on real selection of elements (and not on any position) and they are following the mouse cursor to allow for a smooth visualization. Other charts libraries have a fixed position for tooltips when entering the selection and user cannot move the mouse to  a position which is under the tooltip, making the interaction more clumsy.
 
 A small number of widgets is also contained by this library. This set includes alarm (status), indicator (gauge), display (value & comparison)
 
@@ -41,3 +35,11 @@ You can find information about NextCharts on following links:
 
 1. NextReports Blog: http://blog.next-reports.com/
 2. NextReports Site: http://next-reports.com/
+
+     _   _           _   _____ _                _       
+    | \ | |         | | /  __ \ |              | |      
+    |  \| | _____  _| |_| /  \/ |__   __ _ _ __| |_ ___ 
+    | . \ |/ _ \ \/ / __| |   | '_ \ / _` | '__| __/ __|
+    | |\  |  __/>  <| |_| \__/\ | | | (_| | |  | |_\__ \
+    \_| \_/\___/_/\_\\__|\____/_| |_|\__,_|_|   \__|___/
+                                                                                                        
