@@ -36,12 +36,3 @@ You can find information about NextCharts on following links:
 1. NextReports Blog: http://blog.next-reports.com/
 2. NextReports Site: http://next-reports.com/
 
-
-     _   _           _   _____ _                _       
-    | \ | |         | | /  __ \ |              | |      
-    |  \| | _____  _| |_| /  \/ |__   __ _ _ __| |_ ___ 
-    | . \ |/ _ \ \/ / __| |   | '_ \ / _` | '__| __/ __|
-    | |\  |  __/>  <| |_| \__/\ | | | (_| | |  | |_\__ \
-    \_| \_/\___/_/\_\\__|\____/_| |_|\__,_|_|   \__|___/
-                                                          
-                                                                                                        
