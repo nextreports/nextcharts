@@ -446,7 +446,8 @@ function drawData(withFill, withClick, mousePos) {
 	//draw data 
 	c.lineWidth = 1.0;
 	var stop = true;	
-			    
+		
+	var cursorStyle = 'default';
 	for(var k=0; k<series; k++) {  
 	  dotsK[k] = [];	
 	  for(var i=0; i<data.length; i++) { 		  
@@ -524,14 +525,17 @@ function drawData(withFill, withClick, mousePos) {
 			    	var mes = String(message).replace('#val', tValue);	
 			    	mes = mes.replace('#x', returnValue);
 			    	if (obj.onClick !== undefined) {
-			    		canvas.style.cursor = 'pointer';
+			    		cursorStyle = 'pointer';
+			    		canvas.style.cursor = cursorStyle;
 			    	}
 			    	if (found === undefined) {
 		        		found = mes;
 		        	}
 	    		}
 		    } else {
-		    	canvas.style.cursor = 'default';
+		    	if (cursorStyle != 'pointer') {
+		    		canvas.style.cursor = 'default';
+		    	}
 		    }    					   
 	    }
 	  } 

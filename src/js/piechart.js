@@ -264,7 +264,8 @@ function drawData(withFill, withClick, mousePos) {
 		lastPosition += data[i]/total;
 	}	
 	delta = adjustYLabels(pieData, center, H+line);	
-			    
+		
+	var cursorStyle = 'default';
 	for(var i=0; i<data.length; i++) { 
 		
 		// create slices paths
@@ -331,14 +332,17 @@ function drawData(withFill, withClick, mousePos) {
 					    	mes = mes.replace('#total', tTotal);
 					    	mes = mes.replace('#percent', pieData[slice]['percent']);
 					    	if (obj.onClick !== undefined) {
-					    		canvas.style.cursor = 'pointer';
+					    		cursorStyle = 'pointer';
+					    		canvas.style.cursor = cursorStyle;
 					    	}
 					    	if (found === undefined) {
 				        		found = mes;
 				        	}					        
 			    		}
 					} else {
-						canvas.style.cursor = 'default';						
+						if (cursorStyle != 'pointer') {
+							canvas.style.cursor = 'default';
+						}
 					}
 				}
 			} 	    					   

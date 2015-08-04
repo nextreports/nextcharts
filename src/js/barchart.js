@@ -576,6 +576,7 @@ function drawData(withFill, withClick, mousePos) {
 	var barTooltip = "";
 	var barValue;
 	var abort = false;
+	var cursorStyle = 'default';
 	for(var k=0; k<series && !abort; k++) {  
 	  for(var i=0; i<data.length && !abort; i++) { 		  
 	    var dp = obj.data[k][i];
@@ -661,7 +662,8 @@ function drawData(withFill, withClick, mousePos) {
 			    	mes = mes.replace('#x', returnValue);
 				    mes = mes.replace('#total', maxSum[i]);
 				    if (obj.onClick !== undefined) {
-				    	canvas.style.cursor = 'pointer';
+				    	cursorStyle = 'pointer';
+				    	canvas.style.cursor = cursorStyle;
 				    }
 			        barTooltip = mes;
    			        // if there is a combo line we test first to see if point for line was clicked
@@ -674,8 +676,10 @@ function drawData(withFill, withClick, mousePos) {
 			        	}
 			        }
 	    		}
-		    } else {		    	
-		    	canvas.style.cursor = 'default';
+		    } else {	
+		    	if (cursorStyle != 'pointer') {
+		    		canvas.style.cursor = 'default';
+		    	}
 		    }    					   
 	    }
 	  } 
@@ -767,7 +771,8 @@ function drawData(withFill, withClick, mousePos) {
 					    	var mes = String(lineMessage).replace('#val', tValue);
 					    	mes = mes.replace('#x', returnValue);
 					    	if (obj.onClick !== undefined) {
-					    		canvas.style.cursor = 'pointer';
+					    		cursorStyle = 'pointer';
+					    		canvas.style.cursor = cursorStyle;
 					    	}
 					    	if (found === undefined) {
 					    		found = mes;
@@ -776,10 +781,13 @@ function drawData(withFill, withClick, mousePos) {
 				    } else {	
 				    	if (abort == true) {
 				    		if (obj.onClick !== undefined) {
-				    			canvas.style.cursor = 'pointer';
+				    			cursorStyle = 'pointer';
+				    			canvas.style.cursor = cursorStyle;
 				    		}
 				    	} else {
-				    		canvas.style.cursor = 'default';
+				    		if (cursorStyle != 'pointer') {
+				    			canvas.style.cursor = 'default';
+				    		}
 				    	}
 				    }    					   
 			    }

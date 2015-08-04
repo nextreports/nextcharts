@@ -92,15 +92,15 @@ function distinctHexColors(count) {
 function colorLuminance(color, lum) {
 	var hex = colorToHex(color);
 	// validate hex string
-	hex = String(hex).replace(/[^0-9a-f]/gi, '');	
+	hex = String(hex).replace(/[^0-9a-f]/gi, '');
 	if (hex.length < 6) {
-		hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];		
+		hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
 	}
 	lum = lum || 0;
 	// convert to decimal and change luminosity
-	var rgb = "#", c, i;	
+	var rgb = "#", c, i;
 	for (i = 0; i < 3; i++) {
-		c = parseInt(hex.substr(i*2,2), 16);			
+		c = parseInt(hex.substr(i*2,2), 16);
 		c = Math.round(Math.min(Math.max(0, c + (c * lum)), 255)).toString(16);
 		rgb += ("00"+c).substr(c.length);
 	}
@@ -1040,6 +1040,7 @@ function drawData(withFill, withClick, mousePos) {
 	var barTooltip = "";
 	var barValue;
 	var abort = false;
+	var cursorStyle = 'default';
 	for(var k=0; k<series && !abort; k++) {  
 	  for(var i=0; i<data.length && !abort; i++) { 		  
 	    var dp = obj.data[k][i];
@@ -1125,7 +1126,8 @@ function drawData(withFill, withClick, mousePos) {
 			    	mes = mes.replace('#x', returnValue);
 				    mes = mes.replace('#total', maxSum[i]);
 				    if (obj.onClick !== undefined) {
-				    	canvas.style.cursor = 'pointer';
+				    	cursorStyle = 'pointer';
+				    	canvas.style.cursor = cursorStyle;
 				    }
 			        barTooltip = mes;
    			        // if there is a combo line we test first to see if point for line was clicked
@@ -1138,8 +1140,10 @@ function drawData(withFill, withClick, mousePos) {
 			        	}
 			        }
 	    		}
-		    } else {		    	
-		    	canvas.style.cursor = 'default';
+		    } else {	
+		    	if (cursorStyle != 'pointer') {
+		    		canvas.style.cursor = 'default';
+		    	}
 		    }    					   
 	    }
 	  } 
@@ -1231,7 +1235,8 @@ function drawData(withFill, withClick, mousePos) {
 					    	var mes = String(lineMessage).replace('#val', tValue);
 					    	mes = mes.replace('#x', returnValue);
 					    	if (obj.onClick !== undefined) {
-					    		canvas.style.cursor = 'pointer';
+					    		cursorStyle = 'pointer';
+					    		canvas.style.cursor = cursorStyle;
 					    	}
 					    	if (found === undefined) {
 					    		found = mes;
@@ -1240,10 +1245,13 @@ function drawData(withFill, withClick, mousePos) {
 				    } else {	
 				    	if (abort == true) {
 				    		if (obj.onClick !== undefined) {
-				    			canvas.style.cursor = 'pointer';
+				    			cursorStyle = 'pointer';
+				    			canvas.style.cursor = cursorStyle;
 				    		}
 				    	} else {
-				    		canvas.style.cursor = 'default';
+				    		if (cursorStyle != 'pointer') {
+				    			canvas.style.cursor = 'default';
+				    		}
 				    	}
 				    }    					   
 			    }
@@ -3278,7 +3286,8 @@ function drawData(withFill, withClick, mousePos) {
 	//draw data 
 	c.lineWidth = 1.0;
 	var stop = true;	
-			    
+		
+	var cursorStyle = 'default';
 	for(var k=0; k<series; k++) {  
 	  dotsK[k] = [];	
 	  for(var i=0; i<data.length; i++) { 		  
@@ -3356,14 +3365,17 @@ function drawData(withFill, withClick, mousePos) {
 			    	var mes = String(message).replace('#val', tValue);	
 			    	mes = mes.replace('#x', returnValue);
 			    	if (obj.onClick !== undefined) {
-			    		canvas.style.cursor = 'pointer';
+			    		cursorStyle = 'pointer';
+			    		canvas.style.cursor = cursorStyle;
 			    	}
 			    	if (found === undefined) {
 		        		found = mes;
 		        	}
 	    		}
 		    } else {
-		    	canvas.style.cursor = 'default';
+		    	if (cursorStyle != 'pointer') {
+		    		canvas.style.cursor = 'default';
+		    	}
 		    }    					   
 	    }
 	  } 
@@ -4530,7 +4542,8 @@ function drawData(withFill, withClick, mousePos) {
 		lastPosition += data[i]/total;
 	}	
 	delta = adjustYLabels(pieData, center, H+line);	
-			    
+		
+	var cursorStyle = 'default';
 	for(var i=0; i<data.length; i++) { 
 		
 		// create slices paths
@@ -4597,14 +4610,17 @@ function drawData(withFill, withClick, mousePos) {
 					    	mes = mes.replace('#total', tTotal);
 					    	mes = mes.replace('#percent', pieData[slice]['percent']);
 					    	if (obj.onClick !== undefined) {
-					    		canvas.style.cursor = 'pointer';
+					    		cursorStyle = 'pointer';
+					    		canvas.style.cursor = cursorStyle;
 					    	}
 					    	if (found === undefined) {
 				        		found = mes;
 				        	}					        
 			    		}
 					} else {
-						canvas.style.cursor = 'default';						
+						if (cursorStyle != 'pointer') {
+							canvas.style.cursor = 'default';
+						}
 					}
 				}
 			} 	    					   
@@ -5382,6 +5398,7 @@ function drawData(withFill, withClick, mousePos) {
 	var hit = false;
 	var smallestRadius;
 	var smallestIndex;
+	var cursorStyle = 'default';
 	for (var i=0; i<data.length; i++) {						
 		var dataX = hStep + (obj.data[0][i] - nx) / mx + gap/2 - c.measureText("0").width / 2 -yLegendSpace/4;		  
 		var dataY = (obj.data[1][i] - ny) / my;		
@@ -5465,14 +5482,17 @@ function drawData(withFill, withClick, mousePos) {
 			    	mes = mes.replace('#c', obj.categories[i]);
 			    	mes = mes.replace('#label', obj.labels[i]);
 			    	if (obj.onClick !== undefined) {
-			    		canvas.style.cursor = 'pointer';
+			    		cursorStyle = 'pointer';
+			    		canvas.style.cursor = cursorStyle;
 			    	}			    	
 			    	if (found === undefined) {
 	    				found = mes;
 	    			}
 	    		}
 		    } else {
-		    	canvas.style.cursor = 'default';
+		    	if (cursorStyle != 'pointer') {
+		    		canvas.style.cursor = 'default';
+		    	}
 		    }    					   
 	    }
 	}

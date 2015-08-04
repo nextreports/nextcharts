@@ -415,6 +415,7 @@ function drawData(withFill, withClick, mousePos) {
 	var hit = false;
 	var smallestRadius;
 	var smallestIndex;
+	var cursorStyle = 'default';
 	for (var i=0; i<data.length; i++) {						
 		var dataX = hStep + (obj.data[0][i] - nx) / mx + gap/2 - c.measureText("0").width / 2 -yLegendSpace/4;		  
 		var dataY = (obj.data[1][i] - ny) / my;		
@@ -498,14 +499,17 @@ function drawData(withFill, withClick, mousePos) {
 			    	mes = mes.replace('#c', obj.categories[i]);
 			    	mes = mes.replace('#label', obj.labels[i]);
 			    	if (obj.onClick !== undefined) {
-			    		canvas.style.cursor = 'pointer';
+			    		cursorStyle = 'pointer';
+			    		canvas.style.cursor = cursorStyle;
 			    	}			    	
 			    	if (found === undefined) {
 	    				found = mes;
 	    			}
 	    		}
 		    } else {
-		    	canvas.style.cursor = 'default';
+		    	if (cursorStyle != 'pointer') {
+		    		canvas.style.cursor = 'default';
+		    	}
 		    }    					   
 	    }
 	}
