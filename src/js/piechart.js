@@ -61,6 +61,8 @@ var realHeight;
 var canvas;  
 var c; 
 var tipCanvas;
+var tempCanvas;
+var tempCtx;
 var H = 6;
 var line = 20;
 var hline = 5;
@@ -72,6 +74,7 @@ var delta = 0;
 //if we want to have font size scaled accordingly with chart width then this property must be true 
 //(such example may be when we want to show the chart on a big monitor)
 var adjustableTextFontSize = false;
+var highlighterIndex = -1;
 
 function drawPie(myjson, idCan, idTipCan, canWidth, canHeight) {	
 			
@@ -81,6 +84,9 @@ function drawPie(myjson, idCan, idTipCan, canWidth, canHeight) {
 	}
 	tipCanvas = document.getElementById(idTipCan);
 	c = canvas.getContext('2d');
+	
+	tempCanvas = document.createElement('canvas');	
+	tempCtx = tempCanvas.getContext('2d');	
 	
 	obj = myjson;
 	chartType = obj.type;
@@ -181,13 +187,18 @@ function updateSize(canWidth, canHeight) {
 			canvas.height = canHeight;
 		}
 	}		
+	
+	tempCanvas.width = canvas.width;
+	tempCanvas.height = canvas.height;
+	
 	realWidth = canvas.width;
 	realHeight = canvas.height;	
 }
 
 
 function animDraw() {      
-    if (drawIt(H)) {          		    
+    if (drawIt(H)) {          
+    	tempCtx.drawImage(canvas, 0, 0);    
         return false;
     }    
     H += 1+(realHeight-titleSpace)/30;    
@@ -254,23 +265,17 @@ function drawData(withFill, withClick, mousePos) {
 	}	
 	delta = adjustYLabels(pieData, center, H+line);	
 			    
-	for(var i=0; i<data.length; i++) {  	  		 	  	    		   	    	    	    	     
+	for(var i=0; i<data.length; i++) { 
+		
+		// create slices paths
+		defineSliceSelection(pieData, i, center, H);
 	    
 		if (withFill) {
-		    var gradient = c.createLinearGradient( 0, 0, realWidth, realHeight );
+			var gradient = c.createLinearGradient( 0, 0, realWidth, realHeight );
 			gradient.addColorStop( 0, "#ddd" );
 			gradient.addColorStop( 1, seriesColor[i] );
-	
-			// draw slices
-			c.beginPath();
-			if (pieData.length > 1) {
-				c.moveTo(center[0],center[1]);
-			}				
-			c.arc(center[0],center[1],H,pieData[i]['startAngle'],pieData[i]['endAngle'],false);
-			if (pieData.length > 1) {
-				c.lineTo(center[0],center[1]);
-			}
-			c.closePath();
+			
+			// draw slices			
 			c.fillStyle = gradient;
 			c.fill();			
 			c.lineWidth = 1;
@@ -283,17 +288,26 @@ function drawData(withFill, withClick, mousePos) {
 			}
 			
 		} else {
-	    		    		    	
-	    	var fromCenterX = mousePos.x - center[0];
+			
+			var fromCenterX = mousePos.x - center[0];
 			var fromCenterY = mousePos.y - center[1];
 			var fromCenter = Math.sqrt(Math.pow(Math.abs(fromCenterX), 2) + Math.pow(Math.abs(fromCenterY), 2 ));
-
+			
+			// highlight selection
+			if ((fromCenter <= radius-delta) && (i == highlighterIndex)) {
+				highlight(seriesColor[i], 0.5);		
+			} else {
+				unhighlight(i);
+			}			
+	    		    		    		    	
 			if (fromCenter <= radius-delta) {
 				var angle = Math.atan2(fromCenterY, fromCenterX);
 				if (angle < 0) angle = 2 * Math.PI + angle; // normalize
 
-				for (var slice in pieData) {
-					if (angle >= pieData[slice]['startAngle'] && angle <= pieData[slice]['endAngle']) {
+				var found;
+				for (var slice in pieData) {					
+					if (angle >= pieData[slice]['startAngle'] && angle <= pieData[slice]['endAngle']) {				    		
+			    		highlighterIndex = slice;	  			    		
 						var tValue = pieData[slice]['value'];
 						var tTotal = total;
 			    		if (obj.tooltipPattern !== undefined) {
@@ -308,7 +322,9 @@ function drawData(withFill, withClick, mousePos) {
 			    			returnValue = labels[slice]; // tValue
 			    		}
 			    		if (withClick) {
-			    			return returnValue;
+			    			if (found === undefined) {
+			    				found = returnValue;
+			    			}
 			    		} else {
 					    	var mes = String(message).replace('#val', tValue);
 					    	mes = mes.replace('#x', returnValue);
@@ -317,23 +333,59 @@ function drawData(withFill, withClick, mousePos) {
 					    	if (obj.onClick !== undefined) {
 					    		canvas.style.cursor = 'pointer';
 					    	}
-					        return mes;
+					    	if (found === undefined) {
+				        		found = mes;
+				        	}					        
 			    		}
 					} else {
-						canvas.style.cursor = 'default';
+						canvas.style.cursor = 'default';						
 					}
 				}
-			}	
-	    					   
+			} 	    					   
 	    }
 	   
-	}   	
+	}   
+	
+	if (found !== undefined) {		  
+		return found;
+	}	
 		
 	if (withFill) {
 		return stop;
 	} else {
 		// empty tooltip message
 		return "";
+	}
+}
+
+function defineSliceSelection(pieData, i, center, H) {
+	c.beginPath();
+	if (pieData.length > 1) {
+		c.moveTo(center[0],center[1]);
+	}				
+	c.arc(center[0],center[1],H,pieData[i]['startAngle'],pieData[i]['endAngle'],false);
+	if (pieData.length > 1) {
+		c.lineTo(center[0],center[1]);
+	}
+	c.closePath();
+}
+
+function highlight(gradient, luminance) {
+	c.fillStyle = background;			
+	c.fill(); 
+	
+	var lColor = highlightColor(gradient,luminance);
+	c.fillStyle = lColor;
+	c.globalAlpha = globalAlpha;
+	c.fill();  
+	c.globalAlpha = 1;	
+	
+	highlighterIndex = -1;		
+}
+
+function unhighlight(i) {	
+	if (i == 0) {		
+		c.drawImage(tempCanvas, 0, 0);		
 	}
 }
 

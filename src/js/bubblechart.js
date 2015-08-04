@@ -138,6 +138,8 @@ var realHeight;
 var canvas;  
 var c; 
 var tipCanvas;
+var tempCanvas;
+var tempCtx;
 var H = new Array();
 var dotRadius = 3;
 // space between X axis and first tick
@@ -148,6 +150,7 @@ var resizeHeight = false;
 //if we want to have font size scaled accordingly with chart width then this property must be true 
 //(such example may be when we want to show the chart on a big monitor)
 var adjustableTextFontSize = false;
+var highlighterIndex = -1;
 
 function drawBubble(myjson, idCan, idTipCan, canWidth, canHeight) {	
 			
@@ -157,6 +160,9 @@ function drawBubble(myjson, idCan, idTipCan, canWidth, canHeight) {
 	}
 	tipCanvas = document.getElementById(idTipCan);
 	c = canvas.getContext('2d');
+	
+	tempCanvas = document.createElement('canvas');	
+	tempCtx = tempCanvas.getContext('2d');
 	
 	obj = myjson;
 	chartType = obj.type;
@@ -326,6 +332,9 @@ function updateSize(canWidth, canHeight) {
 		}
 	}		
 	
+	tempCanvas.width = canvas.width;
+	tempCanvas.height = canvas.height;
+	
 	realWidth = canvas.width;
 	realHeight = canvas.height;	
 		
@@ -350,7 +359,8 @@ function updateSize(canWidth, canHeight) {
 
 
 function animDraw() {      
-    if (drawIt(H)) {          		    
+    if (drawIt(H)) {         
+    	tempCtx.drawImage(canvas, 0, 0);  
         return false;
     }    
     for (var i=0;i<obj.categories.length;i++){
@@ -402,6 +412,9 @@ function drawData(withFill, withClick, mousePos) {
 	var maxZ = Math.max.apply( Math, obj.data[2]);	
 				
 	var radius = new Array();	
+	var hit = false;
+	var smallestRadius;
+	var smallestIndex;
 	for (var i=0; i<data.length; i++) {						
 		var dataX = hStep + (obj.data[0][i] - nx) / mx + gap/2 - c.measureText("0").width / 2 -yLegendSpace/4;		  
 		var dataY = (obj.data[1][i] - ny) / my;		
@@ -436,12 +449,14 @@ function drawData(withFill, withClick, mousePos) {
 		} else {
 			c.fillStyle = sColor;	
 		}
-		
-			
+					
         c.beginPath();                
         c.arc(dataX, dataY, H[i], 0,Math.PI*2);                
-        
-        if (withFill) {
+        var fs = c.fillStyle;
+        if  (i == highlighterIndex) {
+        	c.fillStyle =  highlightColor(sColor,0.5); 
+    	} 
+        if (withFill) {       	
 			c.globalAlpha = globalAlpha;
 			c.fill();
 			c.globalAlpha = 1;
@@ -449,15 +464,33 @@ function drawData(withFill, withClick, mousePos) {
 			c.strokeStyle = "#fff";
 			c.stroke();	  
 			c.strokeStyle = oldStroke;
-		} else {			
-	    	if (c.isPointInPath(mousePos.x, mousePos.y)) {	    		
+		} else {		
+			// highlight selection
+			if (c.isPointInPath(mousePos.x, mousePos.y)) {
+				hit = true;	        
+			}
+			if (!hit) {
+				highlighterIndex = -1;				
+			}
+
+			var found;			
+	    	if (c.isPointInPath(mousePos.x, mousePos.y)) {	
+	    		if ((smallestRadius == undefined) || (smallestRadius > radius[i])) {
+	        		smallestRadius = radius[i];
+	        		smallestIndex = i;
+	        	}
+	        	if (i == smallestIndex) {
+	        		highlighterIndex = i;
+	        	}
 	    		var tValue = obj.data[1][i];
 	    		if (obj.tooltipPattern !== undefined) {
 	    			tValue = formatNumber(tValue, obj.tooltipPattern.decimals, obj.tooltipPattern.decimalSeparator, obj.tooltipPattern.thousandSeparator);
 	    		}	  
 	    		var returnValue = obj.data[0][i]; // tValue
-	    		if (withClick) {
-	    			return returnValue;
+	    		if (withClick) {	    			
+	    			if (found === undefined) {
+	    				found = returnValue;
+	    			}
 	    		} else {
 			    	var mes = String(message).replace('#val', tValue);	
 			    	mes = mes.replace('#x', returnValue);
@@ -466,22 +499,32 @@ function drawData(withFill, withClick, mousePos) {
 			    	mes = mes.replace('#label', obj.labels[i]);
 			    	if (obj.onClick !== undefined) {
 			    		canvas.style.cursor = 'pointer';
-			    	}
-			        return mes;
+			    	}			    	
+			    	if (found === undefined) {
+	    				found = mes;
+	    			}
 	    		}
 		    } else {
 		    	canvas.style.cursor = 'default';
 		    }    					   
 	    }
-
 	}
+	
+	if (found !== undefined) {		  
+		return found;
+	}	
 		
 	if (withFill) {
+		unhighlight();
 		return stop;
 	} else {
 		// empty tooltip message
 		return "";
 	}
+}
+
+function unhighlight(i) {		
+	c.drawImage(tempCanvas, 0, 0);			
 }
 
 function getYValue(i, maxValY, yStep) {
@@ -502,7 +545,7 @@ function getSeriesColor(i) {
 	var ind = find(uniqueCategories,cat);
 	if (ind === false) {
 		return "white";
-	}
+	}	
 	return seriesColor[ind];
 }
 
@@ -828,7 +871,7 @@ function drawGrid() {
 }
 
 function drawAxis() {
-	c.fillStyle = "black"; 
+	c.strokeStyle = "black"; 
 	c.lineWidth = 2.0; 
 	var axisColor = c.strokeStyle;	
 	

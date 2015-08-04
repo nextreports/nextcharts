@@ -156,8 +156,10 @@ var realHeight;
 var canvas;  
 var c; 
 var tipCanvas;
+var tempCanvas;
+var tempCtx;
 var H = 6;
-var dotRadius = 3;
+var dotRadius = 4;
 // space between X axis and first tick
 var tickInit;
 var resizeWidth = false;
@@ -166,6 +168,8 @@ var resizeHeight = false;
 //if we want to have font size scaled accordingly with chart width then this property must be true 
 //(such example may be when we want to show the chart on a big monitor)
 var adjustableTextFontSize = false;
+var highlighterSerie = -1;
+var highlighterSerieIndex = -1;
 
 function drawLine(myjson, idCan, idTipCan, canWidth, canHeight) {	
 			
@@ -175,6 +179,9 @@ function drawLine(myjson, idCan, idTipCan, canWidth, canHeight) {
 	}
 	tipCanvas = document.getElementById(idTipCan);
 	c = canvas.getContext('2d');
+	
+	tempCanvas = document.createElement('canvas');	
+	tempCtx = tempCanvas.getContext('2d');	
 	
 	obj = myjson;
 	chartType = obj.type;
@@ -366,7 +373,10 @@ function updateSize(canWidth, canHeight) {
 			canvas.height = canHeight;
 		}
 	}		
-	
+		
+	tempCanvas.width = canvas.width;
+	tempCanvas.height = canvas.height;
+		
 	realWidth = canvas.width;
 	realHeight = canvas.height;	
 		
@@ -401,7 +411,8 @@ function updateSize(canWidth, canHeight) {
 
 
 function animDraw() {      
-    if (drawIt(H)) {          		    
+    if (drawIt(H)) {   
+    	tempCtx.drawImage(canvas, 0, 0);
         return false;
     }    
     H += 1+(realHeight-step-titleSpace-legendSpace)/30;    
@@ -481,41 +492,80 @@ function drawData(withFill, withClick, mousePos) {
 	    dotsK[k].push({x:dotX, y:dotY});
 	    	 
 	    var savedStroke = c.strokeStyle;
-	    if ((chartStyle == "normal") || (chartType == "area")) {
-			dotRadius = 2;
+	    if (chartStyle == "normal") {
+			dotRadius = 3;
 		}
 	    drawLineElements(c, chartStyle, chartType, dotRadius, seriesColor, dotsK, data.length, xaxisY, globalAlpha, k, i, dotX, dotY, dotX2, dotY2, withFill);
 	    c.strokeStyle = savedStroke;
 	      	    
+	    var found;
 	    if (!withFill) {
+	    	
+	    	// highlight selection
+			if ((k == highlighterSerie) && (i == highlighterSerieIndex)) {
+				highlight(k, 0.5);		
+			} else {
+				unhighlight(k, i);
+			}	
+	    	
 	    	if (c.isPointInPath(mousePos.x, mousePos.y)) {  
+	    		highlighterSerie = k;	    		
+	    		highlighterSerieIndex = i;	  
 	    		var tValue = obj.data[k][i];
 	    		if (obj.tooltipPattern !== undefined) {
 	    			tValue = formatNumber(tValue, obj.tooltipPattern.decimals, obj.tooltipPattern.decimalSeparator, obj.tooltipPattern.thousandSeparator);
 	    		}	  
 	    		var returnValue = labels[i]; // tValue
 	    		if (withClick) {
-	    			return returnValue;
+	    			if (found === undefined) {
+		        		found = returnValue;
+		        	}
 	    		} else {
 			    	var mes = String(message).replace('#val', tValue);	
 			    	mes = mes.replace('#x', returnValue);
 			    	if (obj.onClick !== undefined) {
 			    		canvas.style.cursor = 'pointer';
 			    	}
-			        return mes;
+			    	if (found === undefined) {
+		        		found = mes;
+		        	}
 	    		}
 		    } else {
 		    	canvas.style.cursor = 'default';
 		    }    					   
 	    }
 	  } 
-	}   	
+	}   
+	
+	if (found !== undefined) {		  
+		return found;
+	}	
 		
 	if (withFill) {
 		return stop;
 	} else {
 		// empty tooltip message
 		return "";
+	}
+}
+
+function highlight(k, luminance) {
+	c.fillStyle = background;			
+	c.fill(); 
+	
+	var lColor = highlightColor(seriesColor[k],luminance);
+	c.fillStyle = lColor;
+	c.globalAlpha = globalAlpha;
+	c.fill();  
+	c.globalAlpha = 1;	
+	
+	highlighterSerie = -1;
+	highlighterSerieIndex = -1;		
+}
+
+function unhighlight(k, i) {
+	if ((i == 0) && (k == 0)) {
+		c.drawImage(tempCanvas, 0, 0);	
 	}
 }
 
@@ -1337,7 +1387,7 @@ function drawLineElements(c, chartStyle, chartType, dotRadius, seriesColor, dots
 		c.lineTo(dotX2-space*Math.cos(alpha), yy.y2);	
 	} else {
 		if (chartType == "area") {					
-			c.strokeStyle = colorLuminance(seriesColor[k],1.3);
+			c.strokeStyle = highlightColor(seriesColor[k],1.3);
 			c.beginPath();
 			for (var i = 0; i < dotsK[k].length; i++) {
 				var dot = dotsK[k][i];

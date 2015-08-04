@@ -107,6 +107,24 @@ function colorLuminance(color, lum) {
 	return rgb;
 }
 
+function colorLuminance2(color, lum) {
+	var hex = colorToHex(color);
+	// validate hex string
+	hex = String(hex).replace(/[^0-9a-f]/gi, '');	
+	if (hex.length < 6) {
+		hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];		
+	}
+	lum = lum || 0;
+	// convert to decimal and change luminosity
+	var rgb = "#", c, i;	
+	for (i = 0; i < 3; i++) {
+		c = parseInt(hex.substr(i*2,2), 16);			
+		c = Math.round(Math.min(Math.max(0, c * lum), 255)).toString(16);
+		rgb += ("00"+c).substr(c.length);
+	}
+	return rgb;
+}
+
 
 function componentToHex(c) {
     var hex = c.toString(16);
@@ -121,4 +139,38 @@ function rgbToHex(r, g, b) {
 function colorToHex(c) {
 	var m = /rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/.exec(c);
 	return m ? '#' + (1 << 24 | m[1] << 16 | m[2] << 8 | m[3]).toString(16).substr(1) : c;
+}
+
+//returns brightness value from 0 to 255
+//http://www.webmasterworld.com/forum88/9769.htm
+//https://gist.github.com/geekmy/5010419
+function get_brightness(hexCode) {
+	// strip off any leading #
+	hexCode = hexCode.replace('#', '');
+
+	var c_r = parseInt(hexCode.substr(0, 2),16);
+	var c_g = parseInt(hexCode.substr(2, 2),16);
+	var c_b = parseInt(hexCode.substr(4, 2),16);
+
+	return ((c_r * 299) + (c_g * 587) + (c_b * 114)) / 1000;
+}
+
+function highlightColor(color, lum) {
+	var hex = colorToHex(color);	
+	if (get_brightness(hex) > 160) {
+		// too bright, need to darken it
+		if (lum > 0) {
+			lum = -lum;
+		}		
+	} else {		
+		if (lum < 0) {
+			lum = -lum;
+		}
+	}	
+	var result = colorLuminance(color, lum);
+	if (color == result) {
+		// avoid same color
+		result = colorLuminance2(color, lum);
+	}
+	return result;
 }

@@ -163,6 +163,11 @@ var realHeight;
 var canvas;  
 var c; 
 var tipCanvas;
+var tempCanvas;
+var tempCtx;
+// for combo lines
+var tempLineCanvas;
+var tempLineCtx;
 var H = cornerRadius;
 // space between X axis and first tick
 var tickInit;
@@ -173,6 +178,10 @@ var resizeHeight = false;
 // (such example may be when we want to show the chart on a big monitor)
 var adjustableTextFontSize = false;
 var maxLabelWidth = 0;	
+var highlighterSerie = -1;
+var highlighterSerieIndex = -1;
+var lineHighlighterSerie = -1;
+var lineHighlighterSerieIndex = -1;
 
 function drawBar(myjson, idCan, idTipCan, canWidth, canHeight) {	
 					
@@ -184,7 +193,22 @@ function drawBar(myjson, idCan, idTipCan, canWidth, canHeight) {
 	tipCanvas = document.getElementById(idTipCan);
 	c = canvas.getContext('2d');
 	
+	tempCanvas = document.createElement('canvas');	
+	tempCtx = tempCanvas.getContext('2d');	
+	
 	obj = myjson;
+	
+	chartStyle = obj.style;
+	// test for passing a wrong style
+	if ((typeof chartStyle === "undefined")  || (find(['normal', 'glass', 'cylinder', 'dome', 'parallelepiped'],chartStyle) === false)) {	
+		chartStyle = "normal";
+	}	
+	
+	if ((obj.lineData !== undefined) || (chartStyle == "cylinder") || (chartStyle == "parallelepiped")) {
+		tempLineCanvas = document.createElement('canvas');
+		tempLineCtx = tempLineCanvas.getContext('2d');
+	}
+		
 	chartType = obj.type;
 	if (typeof chartType === "undefined") {
 	    chartType = "bar";
@@ -199,11 +223,7 @@ function drawBar(myjson, idCan, idTipCan, canWidth, canHeight) {
 		background = "white";
 	}
 		
-	chartStyle = obj.style;
-	// test for passing a wrong style
-	if ((typeof chartStyle === "undefined")  || (find(['normal', 'glass', 'cylinder', 'dome', 'parallelepiped'],chartStyle) === false)) {	
-		chartStyle = "normal";
-	}	
+	
 	
 	data = obj.data[0];
 	series = obj.data.length;
@@ -433,7 +453,25 @@ function updateSize(canWidth, canHeight) {
 		} else {
 			canvas.height = canHeight;
 		}
-	}			
+	}	
+	
+	// for horizontal bars canvas is rotated , so we must have the space to save it
+	if (canvas.width > canvas.height) {
+		tempCanvas.width = canvas.width;
+		tempCanvas.height = canvas.width;
+	} else {
+		tempCanvas.width = canvas.height;
+		tempCanvas.height = canvas.height;
+	}
+	if ((obj.lineData !== undefined) || (chartStyle == "cylinder") || (chartStyle == "parallelepiped")) {
+		if (canvas.width > canvas.height) {
+			tempLineCanvas.width = canvas.width;
+			tempLineCanvas.height = canvas.width;
+		} else {
+			tempLineCanvas.width = canvas.height;
+			tempLineCanvas.height = canvas.height;
+		}	
+	}
 	
 	if (isH(chartType)) {    			
     	if (typeof obj.legend !== "undefined") {   
@@ -453,8 +491,13 @@ function updateSize(canWidth, canHeight) {
 		c.translate(canvas.width, canvas.height);
 		// flip context horizontally (mirror transformation)
 		c.scale(-1,1);
-		c.rotate(-90*Math.PI/180);		
-		
+		c.rotate(-90*Math.PI/180);	
+				
+		// adjust also the temporary canvas
+		tempCtx.translate(tempCanvas.width, tempCanvas.height);
+		// flip context horizontally (mirror transformation)
+		tempCtx.scale(-1,1);
+		tempCtx.rotate(-90*Math.PI/180);					
 	} else {
 		realWidth = canvas.width;
 		realHeight = canvas.height;
@@ -485,12 +528,13 @@ function updateSize(canWidth, canHeight) {
 		    
 		    hStep2 = computeHStep(maxValY2, y2Step, false);		    
 	    }		   
-	}
+	}	
 }
 
 
 function animDraw() {      
-    if (drawIt(H)) {          		    
+    if (drawIt(H)) {       	    	
+    	tempCtx.drawImage(canvas, 0, 0);      	
         return false;
     }    
     H += 1+(realHeight-step-titleSpace-legendSpace)/30;    
@@ -568,7 +612,7 @@ function drawData(withFill, withClick, mousePos) {
 	        rectX = rectX + k*rectWidth; 
 	    }  	    
 	    
-	    var lColor = colorLuminance(seriesColor[k],1.3);
+	    var lColor = highlightColor(seriesColor[k],1.3);
 	    var grad = c.createLinearGradient(rectX, realWidth-hStep-hStep2 , rectX + rectWidth , realWidth-hStep-hStep2);       
 	    grad.addColorStop(0,lColor); // light color  
 	    grad.addColorStop(1,seriesColor[k]);    
@@ -580,7 +624,7 @@ function drawData(withFill, withClick, mousePos) {
 	    if (chartStyle == "glass") {	    	 		    
 	    	acc[i] = drawGlass(k, i, rectX, rectY, rectWidth, grad, acc[i], withFill);
 	    } else if (chartStyle == "cylinder") {	    
-	    	acc[i] = drawCylinder(k, i, rectX, rectY, rectWidth, grad, inverseGrad, acc[i], withFill);
+	    	acc[i] = drawCylinder(k, i, rectX, rectY, rectWidth, grad, inverseGrad, stop, acc[i], withFill);
 	    } else if (chartStyle == "dome") {			    	
 	    	acc[i] = drawDome(k, i, rectX, rectY, rectWidth, inverseGrad, stop, acc[i], withFill);
 	    } else if (chartStyle == "parallelepiped") {			    	
@@ -588,10 +632,14 @@ function drawData(withFill, withClick, mousePos) {
 	    } else {	    	
 	    	// normal style
 	    	acc[i] = drawRectangle(k, i, rectX, rectY, rectWidth, acc[i], withFill);
-	    }   	    	    
+	    } 
+	    
+	    var found;
 	    
 	    if (!withFill) {
-	    	if (c.isPointInPath(mousePos.x, mousePos.y)) {  	    		
+	    	if (c.isPointInPath(mousePos.x, mousePos.y)) {
+	    		highlighterSerie = k;	    		
+	    		highlighterSerieIndex = i;	    		
 	    		var tValue = obj.data[k][i];
 	    		if (obj.tooltipPattern !== undefined) {
 	    			tValue = formatNumber(tValue, obj.tooltipPattern.decimals, obj.tooltipPattern.decimalSeparator, obj.tooltipPattern.thousandSeparator);
@@ -603,8 +651,10 @@ function drawData(withFill, withClick, mousePos) {
 	    			// that's why we do not return the bar clicked value
 	    			if (obj.lineData !== undefined) {
 			        	abort = true;
-			        } else {
-			        	return returnValue;
+			        } else {	
+			        	if (found === undefined) {
+			        		found = returnValue;
+			        	}
 			        }
 	    		} else {
 			    	var mes = String(message).replace('#val', tValue);
@@ -618,16 +668,22 @@ function drawData(withFill, withClick, mousePos) {
 	    			// that's why we do not return the bar tooltip
 			        if (obj.lineData !== undefined) {
 			        	abort = true;
-			        } else {
-			        	return mes;
+			        } else {	
+			        	if (found === undefined) {
+			        		found = mes;
+			        	}
 			        }
 	    		}
-		    } else {
+		    } else {		    	
 		    	canvas.style.cursor = 'default';
 		    }    					   
 	    }
 	  } 
-	}   
+	    
+	}  
+	if (found !== undefined) {		  
+		return found;
+	}	
 	
 	// combo line chart
 	if (obj.lineData !== undefined) {
@@ -681,18 +737,31 @@ function drawData(withFill, withClick, mousePos) {
 			    }   
 			    
 			    var savedStroke = c.strokeStyle;			    
-			    drawLineElements(c, "normal", "line", 2, lineSeriesColor, dotsK, obj.lineData[0].length, xaxisY, globalAlpha, k, i, dotX, dotY, dotX2, dotY2, withFill);			    
+			    drawLineElements(c, "normal", "line", 4, lineSeriesColor, dotsK, obj.lineData[0].length, xaxisY, globalAlpha, k, i, dotX, dotY, dotX2, dotY2, withFill);
+			    if (stop) {
+			    	drawLineElements(tempLineCtx, "normal", "line", 4, lineSeriesColor, dotsK, obj.lineData[0].length, xaxisY, globalAlpha, k, i, dotX, dotY, dotX2, dotY2, withFill);
+			    }
 			    c.strokeStyle = savedStroke;
 			    
 			    if (!withFill) {
+			    	
+			    	// highlight selection
+					if ((k == lineHighlighterSerie) && (i == lineHighlighterSerieIndex)) {
+						highlightLine(k, 0.5);		
+					}
+			    	
 			    	if (c.isPointInPath(mousePos.x, mousePos.y)) {  
+			    		lineHighlighterSerie = k;	    		
+			    		lineHighlighterSerieIndex = i;	    		
 			    		var tValue = obj.lineData[k][i];			    		
 			    		if (obj.tooltipPattern !== undefined) {
 			    			tValue = formatNumber(tValue, obj.tooltipPattern.decimals, obj.tooltipPattern.decimalSeparator, obj.tooltipPattern.thousandSeparator);
 			    		}	 
 			    		var returnValue = labels[k]; // returnValue = tValue;
 			    		if (withClick) {
-			    			return returnValue;
+			    			if (found === undefined) {
+			    				found = returnValue;
+			    			}
 			    		} else {
 			    			var lineMessage = "#val";
 					    	var mes = String(lineMessage).replace('#val', tValue);
@@ -700,7 +769,9 @@ function drawData(withFill, withClick, mousePos) {
 					    	if (obj.onClick !== undefined) {
 					    		canvas.style.cursor = 'pointer';
 					    	}
-					        return mes;
+					    	if (found === undefined) {
+					    		found = mes;
+					    	}	
 			    		}
 				    } else {	
 				    	if (abort == true) {
@@ -715,6 +786,9 @@ function drawData(withFill, withClick, mousePos) {
 			  }
 		}	  
     }
+	if (found !== undefined) {		  
+		return found;
+	}
 		
 	if (withFill) {
 		return stop;
@@ -724,37 +798,123 @@ function drawData(withFill, withClick, mousePos) {
     			return barValue;
     		}
     	}
-		// empty tooltip message if click outside bot line and bar
+		// empty tooltip message if click outside dot line and bar
 		return barTooltip;
 	}
 }
 
+function highlight(k, luminance) {
+	c.fillStyle = background;			
+	c.fill(); 
+	
+	var lColor = highlightColor(seriesColor[k],luminance);
+	c.fillStyle = lColor;
+	c.globalAlpha = globalAlpha;
+	c.fill();  
+	c.globalAlpha = 1;	
+	
+	// if there are combo lines put them over bar chart selection
+	// for cylinder or parralelepiped we need to save some arcs/lines
+	if ((obj.lineData !== undefined) || (chartStyle == "cylinder") || (chartStyle == "parallelepiped")) {
+		c.drawImage(tempLineCanvas, 0, 0);
+	}
+	
+	highlighterSerie = -1;
+	highlighterSerieIndex = -1;		
+}
+
+function highlightLine(k, luminance) {	
+	c.fillStyle = background;			
+	c.fill(); 
+	
+	var lColor = highlightColor(obj.lineColor[k],luminance);
+	c.fillStyle = lColor;
+	c.globalAlpha = globalAlpha;
+	c.fill();  
+	c.globalAlpha = 1;	
+	
+	lineHighlighterSerie = -1;
+	lineHighlighterSerieIndex = -1;		
+}
+
+function unhighlight(k, i) {
+	if ((i == 0) && (k == 0)) {
+		var b = 0;
+		if (isH(chartType)) {
+			b = canvas.width-canvas.height;			
+		}
+		if (b >= 0) {
+			c.drawImage(tempCanvas, -b, 0);
+		} else {
+			c.drawImage(tempCanvas, 0, b);
+		}
+	}
+}
+
 function drawRectangle(k, i, rectX, rectY, rectWidth, acci, withFill) {	
+	var h = acci;
+	var rectXSel = rectX;
+	var rectYSel = rectY;
+	var rectWidthSel = rectWidth;
+	if (!withFill) {	
+		// prepare for highlight selection
+		h = acci-2;
+		if ((k == highlighterSerie) && (i == highlighterSerieIndex)) {
+			rectXSel = rectX+2;
+			rectYSel = rectY+2;
+			rectWidthSel = rectWidth-4;
+		} else {
+			if ((k == 0) || !isStacked(chartType)) {
+				h = acci-1;
+			} else {
+				h = acci;
+			}
+		}
+	}
+	defineRectanglePath(rectXSel, rectYSel, rectWidthSel, h);  	
+	if (isStacked(chartType)) {		    				    	 
+	    acci = rectY;	    	
+	}
+	if (withFill) {				
+		c.fillStyle = seriesColor[k];
+		c.globalAlpha = globalAlpha;
+		c.fill();  
+		c.globalAlpha = 1;
+	} else {								
+		// highlight selection
+		if ((k == highlighterSerie) && (i == highlighterSerieIndex)) {
+			highlight(k, 0.5);		
+		} else {
+			unhighlight(k, i);
+		}						
+	}
+	return acci;
+}
+
+function defineRectanglePath(rectX, rectY, rectWidth, acci) {
 	c.beginPath();	
 	c.moveTo(rectX, rectY);
 	c.lineTo(rectX+rectWidth, rectY);
 	c.lineTo(rectX+rectWidth, acci);
 	c.lineTo(rectX,acci);
-	c.lineTo(rectX, rectY);        	    	
-	if (isStacked(chartType)) {		    				    	 
-	    acci = rectY;	    	
-	}
-	if (withFill) {
-		c.fillStyle = seriesColor[k];
-		c.globalAlpha = globalAlpha;
-		c.fill();  
-		c.globalAlpha = 1;
-	}
-	return acci;
+	c.lineTo(rectX, rectY);
 }
 
-function drawCylinder(k, i, rectX, rectY, rectWidth, grad, inverseGrad, acci, withFill) {	
+function drawCylinder(k, i, rectX, rectY, rectWidth, grad, inverseGrad, stop, acci, withFill) {	
 	if (withFill) { 
 	    c.beginPath();	 
 	    // must compute for arc : starting x, y and radius
 	    var radius = rectWidth/2/Math.sin(Math.PI/8);
 	    // arc drawn from right to left
 	    c.arc(rectX+rectWidth/2, rectY-radius*Math.cos(Math.PI/8), radius, 3*Math.PI/8 , 5*Math.PI/8);
+	     
+	    if (stop && (k == series-1)) {	    
+	    	tempLineCtx.beginPath();
+	    	tempLineCtx.lineWidth=0.4;
+	    	tempLineCtx.arc(rectX+rectWidth/2, rectY-radius*Math.cos(Math.PI/8), radius, 3*Math.PI/8 , 5*Math.PI/8);
+	    	tempLineCtx.stroke();
+	    	tempLineCtx.closePath();	    	
+	    }
 	    if (isStacked(chartType)) {	
 	    	c.lineTo(rectX , acci) ;
 	    	// arc drawn from left to right
@@ -797,36 +957,98 @@ function drawCylinder(k, i, rectX, rectY, rectWidth, grad, inverseGrad, acci, wi
 		c.globalAlpha = globalAlpha;
 		c.fill();  
 		c.globalAlpha = 1;
-    } else {    	
-    	// draw only the outside border
-    	c.beginPath();	 			    
-	    var radius = rectWidth/2/Math.sin(Math.PI/8);
-	    // change from drawCylinder withFill
-	    if ((series == 1) || (k == series-1)) {
-	    	c.arc(rectX+rectWidth/2, rectY+radius*Math.cos(Math.PI/8), radius, 13*Math.PI/8 , 11*Math.PI/8, true);		    	
-	    } else {
-	    	c.arc(rectX+rectWidth/2, rectY-radius*Math.cos(Math.PI/8), radius, 3*Math.PI/8 , 5*Math.PI/8);
-	    }
-	    // same
-	    if (isStacked(chartType)) {	
-	    	c.lineTo(rectX , acci) ;
-	    	// arc drawn from left to right
-	    	c.arc(rectX+rectWidth/2, acci-radius*Math.cos(Math.PI/8), radius, 5*Math.PI/8 , 3*Math.PI/8, true);		    		 
-	    	acci = rectY;	    	
-	    } else {
-	    	c.lineTo(rectX , realHeight-step) ;
-	    	// arc drawn from left to right
-	    	c.arc(rectX+rectWidth/2, realHeight-step-radius*Math.cos(Math.PI/8), radius, 5*Math.PI/8 , 3*Math.PI/8, true);	
-	    }		    
-	    c.lineTo(rectX+rectWidth , rectY) ;	
+    } else {    	    		   
+	    // highlight selection
+		if ((k == highlighterSerie) && (i == highlighterSerieIndex)) {						
+			acci = defineCylinderSelectionPath(k, rectX+1, rectY+1, rectWidth-2, acci);	
+			highlight(k, 0.8);				
+		} else {
+			acci = defineCylinderSelectionPath(k, rectX, rectY, rectWidth, acci);
+			unhighlight(k, i);
+		}		
     }
     return acci;
 }
 
+function defineCylinderSelectionPath(k, rectX, rectY, rectWidth, acci) {
+	// draw only the outside border
+	c.beginPath();	 			    
+    var radius = rectWidth/2/Math.sin(Math.PI/8);
+    // change from drawCylinder withFill
+    if ((series == 1) || (k == series-1) || !isStacked(chartType)) {
+    	c.arc(rectX+rectWidth/2, rectY+radius*Math.cos(Math.PI/8), radius, 13*Math.PI/8 , 11*Math.PI/8, true);	
+    } else {
+    	c.arc(rectX+rectWidth/2, rectY-radius*Math.cos(Math.PI/8), radius, 3*Math.PI/8 , 5*Math.PI/8);
+    }
+    // same
+    if (isStacked(chartType)) {	
+    	c.lineTo(rectX , acci) ;
+    	// arc drawn from left to right
+    	c.arc(rectX+rectWidth/2, acci-radius*Math.cos(Math.PI/8), radius, 5*Math.PI/8 , 3*Math.PI/8, true);		    		 
+    	acci = rectY;	    	
+    } else {
+    	c.lineTo(rectX , realHeight-step) ;
+    	// arc drawn from left to right
+    	c.arc(rectX+rectWidth/2, realHeight-step-radius*Math.cos(Math.PI/8), radius, 5*Math.PI/8 , 3*Math.PI/8, true);	
+    }		    
+    c.lineTo(rectX+rectWidth , rectY) ;	
+    return acci;
+}
+
 function drawGlass(k, i, rectX, rectY, rectWidth, grad, acci, withFill) {
-	if (withFill) {
-		c.fillStyle = grad;
+    if (withFill) {
+    	c.fillStyle = grad;
+    }	
+	var h = acci;
+	var rectXSel = rectX;
+	var rectYSel = rectY;
+	var rectWidthSel = rectWidth;
+	var yPos = realHeight-step;
+	if (!withFill) {		   		
+		h = acci-2;
+		yPos = realHeight-step-2;
+		if ((k == highlighterSerie) && (i == highlighterSerieIndex)) {
+			rectXSel = rectX+2;
+			rectYSel = rectY+2;
+			rectWidthSel = rectWidth-3;
+		} else {					
+			if ((k == 0) || !isStacked(chartType)) {				
+				yPos = realHeight-step-1 ;
+				h = acci-1;
+			} else {
+				h = acci-1;
+				yPos = realHeight-step;
+			}
+		}
 	}
+	defineGlassPath(rectXSel, rectYSel, rectWidthSel, k, i, h, yPos);
+	if (isStacked(chartType)) {		    	    		
+    	acci = rectY;	    
+	}
+	
+    if (withFill) {  
+    	 c.closePath();		
+         c.stroke();
+    	
+	    // apply alpha only for fill (not to the border stroke)!
+	    c.globalAlpha = globalAlpha;
+	    c.fill();  
+	    c.globalAlpha = 1;
+	    
+	   
+    } else {
+    	// highlight selection
+		if ((k == highlighterSerie) && (i == highlighterSerieIndex)) {		
+			highlight(k, 0.8);	
+		} else {						
+			unhighlight(k, i);
+		}
+    }
+    
+    return acci;
+}
+
+function defineGlassPath(rectX, rectY, rectWidth, k, i, acci, yPos) {
 	// instead of a rectangle draw a path with rounded corners
     c.beginPath();	    
     if (rectWidth <= 2*cornerRadius*series) {
@@ -842,10 +1064,10 @@ function drawGlass(k, i, rectX, rectY, rectWidth, grad, acci, withFill) {
     if (isStacked(chartType)) {		    	
     	c.lineTo(rectX + rectWidth, acci) ;
     	c.lineTo(rectX , acci) ;	 
-    	acci = rectY;	    	
+    	//acci = rectY;	    	
     } else {
-    	c.lineTo(rectX + rectWidth, realHeight-step) ;
-    	c.lineTo(rectX , realHeight-step) ;
+    	c.lineTo(rectX + rectWidth, yPos) ;
+    	c.lineTo(rectX , yPos) ;
     }
     if (!isStacked(chartType) || (k == series-1) ) {	
     	c.lineTo(rectX , rectY+cornerRadius) ;
@@ -853,17 +1075,6 @@ function drawGlass(k, i, rectX, rectY, rectWidth, grad, acci, withFill) {
     } else {
     	c.lineTo(rectX , rectY) ;
     }
-    if (withFill) {
-	    c.closePath();		    		   
-	    c.stroke();
-	    		    
-	    // apply alpha only for fill (not to the border stroke)!
-	    c.globalAlpha = globalAlpha;
-	    c.fill();  
-	    c.globalAlpha = 1;
-    }
-    
-    return acci;
 }
 
 function drawDome(k, i, rectX, rectY, rectWidth, inverseGrad, stop, acci, withFill) {
@@ -888,9 +1099,13 @@ function drawDome(k, i, rectX, rectY, rectWidth, inverseGrad, stop, acci, withFi
 		    		isEllipse=true;
 		    	}
 	    	}
-	    } else {		    	
-	    	c.arc(rectX+rectWidth/2, rectY+radius*Math.cos(Math.PI/8), radius, 13*Math.PI/8 , 11*Math.PI/8, true);	
-	    }		    
+	    } else {		    		    	
+	    	if (isH(chartType) && !isStacked(chartType)) {
+	    		c.arc(rectX+rectWidth/2, rectY+topRadius,  topRadius, 2*Math.PI , Math.PI, true);
+	    	} else {
+	    		c.arc(rectX+rectWidth/2, rectY+radius*Math.cos(Math.PI/8), radius, 13*Math.PI/8 , 11*Math.PI/8, true);
+	    	}
+	    }		   
 	    		    
 	    if (isStacked(chartType)) {			    	
 	    	if (isEllipse == true) {
@@ -916,7 +1131,11 @@ function drawDome(k, i, rectX, rectY, rectWidth, inverseGrad, stop, acci, withFi
 		    	}
 	    	}
 	    } else {
-	    	c.lineTo(rectX+rectWidth , rectY) ;
+	    	if (isH(chartType) && !isStacked(chartType)) {
+	    		c.lineTo(rectX+rectWidth , rectY+topRadius) ;
+	    	} else {
+	    		c.lineTo(rectX+rectWidth , rectY) ;
+	    	}
 	    }        		   		    		    
 	    
     	c.stroke();
@@ -926,67 +1145,92 @@ function drawDome(k, i, rectX, rectY, rectWidth, inverseGrad, stop, acci, withFi
 	    c.globalAlpha = globalAlpha;
 	    c.fill();  
 	    c.globalAlpha = 1;
-	} else {		
-	    c.beginPath();	 
-	    // must compute for arc : starting x, y and radius
-	    var topRadius = rectWidth/2;
-	    var radius = rectWidth/2/Math.sin(Math.PI/8);
-	    var value = (obj.data[k][i]-minValY)*tickStep/yStep;
-	    var isEllipse = false;            	    
-	    if ((series == 1) || (k == series-1) || (chartType=="bar")) {	
-	    	var drawDome = !isStacked(chartType) || (isStacked(chartType) && stop );
-	    	if (drawDome) {
-		    	if (topRadius < value) {
-				    // arc drawn from right to left	    		
-		    		c.arc(rectX+rectWidth/2, rectY+topRadius,  topRadius, 2*Math.PI , Math.PI, true);	    		
-		    	} else {
-		    		drawUpperEllipse(c, rectX, rectY, rectWidth, 2*value);
-		    		isEllipse=true;
-		    	}
-	    	}
-	    } else {		    	
-	    	c.arc(rectX+rectWidth/2, rectY-radius*Math.cos(Math.PI/8), radius, 5*Math.PI/8 , 3*Math.PI/8, true);	
-	    }		    
-	    		   	    
-	    if (isStacked(chartType)) {
-	    	if ((series == 1) || (k == series-1)) {
-		    	if (isEllipse == true) {
-			    	// arc drawn from right to left (because ellipse is drawn from left to right)
-		    		c.arc(rectX+rectWidth/2, acci-radius*Math.cos(Math.PI/8), radius, 3*Math.PI/8 , 5*Math.PI/8);
-		    	} else {
-			    	// arc drawn from left to right
-		    		c.arc(rectX+rectWidth/2, acci-radius*Math.cos(Math.PI/8), radius, 5*Math.PI/8 , 3*Math.PI/8, true);
-		    	}
-		    	acci = rectY;	    	
-	    	} else {
-	    		if (isEllipse == true) {
-	    			c.lineTo(rectX , acci) ;
-	    			// arc drawn from right to left
-			    	c.arc(rectX+rectWidth/2, realHeight-step-radius*Math.cos(Math.PI/8), radius, 13*Math.PI/8 , 11*Math.PI/8, true);	
-	    		} else {
-	    			c.lineTo(rectX+rectWidth , acci) ;
-	    			// arc drawn from left to right
-			    	c.arc(rectX+rectWidth/2, realHeight-step-radius*Math.cos(Math.PI/8), radius, 3*Math.PI/8 ,5*Math.PI/8);	
-	    		}
-		    	
-		    }	
-	    } else {
-	    	c.lineTo(rectX , realHeight-step) ;
-	    	// arc drawn from left to right
-	    	c.arc(rectX+rectWidth/2, realHeight-step-radius*Math.cos(Math.PI/8), radius, 5*Math.PI/8 , 3*Math.PI/8, true);	
-	    }		    
-	    if ((series == 1) || (k == series-1) || (chartType=="bar")) {
-	    	var drawDome = !isStacked(chartType) || (isStacked(chartType) && stop );
-	    	if (drawDome) {
-		    	if (topRadius <= value) {			    	
-	    			c.lineTo(rectX+rectWidth , rectY+topRadius) ;
-		    	} // else there is no line to draw
-	    	}
-	    } else {
-	    		c.lineTo(rectX , rectY) ;
-	    }      	   
+	} else {						
+		// highlight selection		
+		if ((k == highlighterSerie) && (i == highlighterSerieIndex)) {				
+			acci = defineDomeSelectionPath(k, i, rectX+1, rectY+1, rectWidth-2, acci-1, stop);
+			highlight(k, 0.8);
+		} else {
+			acci = defineDomeSelectionPath(k, i, rectX, rectY, rectWidth, acci, stop);
+			unhighlight(k, i);
+		}		
 	}
     
+    return acci;
+}
+
+function defineDomeSelectionPath(k, i, rectX, rectY, rectWidth, acci, stop) {	
+	c.beginPath();	 
+    // must compute for arc : starting x, y and radius
+    var topRadius = rectWidth/2;
+    var radius = rectWidth/2/Math.sin(Math.PI/8);
+    var value = (obj.data[k][i]-minValY)*tickStep/yStep;    
+    var isEllipse = false;            	    
+    if ((series == 1) || (k == series-1) || (chartType=="bar")) {	
+    	var drawDome = !isStacked(chartType) || (isStacked(chartType) && stop );
+    	if (drawDome) {
+	    	if (topRadius < value) {
+			    // arc drawn from right to left
+	    		c.arc(rectX+rectWidth/2, rectY+topRadius,  topRadius, 2*Math.PI , Math.PI, true);	  	    		
+	    	} else {
+	    		drawUpperEllipse(c, rectX, rectY, rectWidth, 2*value);
+	    		isEllipse=true;
+	    	}
+    	}
+    } else {		  
+    	if (isH(chartType) && !isStacked(chartType)) {
+    		c.arc(rectX+rectWidth/2, rectY+topRadius,  topRadius, 2*Math.PI , Math.PI, true);
+    	} else {	
+    		c.arc(rectX+rectWidth/2, rectY-radius*Math.cos(Math.PI/8), radius, 5*Math.PI/8 , 3*Math.PI/8, true);
+    	}
+    }		 
+    		   	    
+    if (isStacked(chartType)) {
+    	if ((series == 1) || (k == series-1)) {
+	    	if (isEllipse == true) {
+		    	// arc drawn from right to left (because ellipse is drawn from left to right)	    		
+	    		c.arc(rectX+rectWidth/2, acci-radius*Math.cos(Math.PI/8), radius, 3*Math.PI/8 , 5*Math.PI/8);	    	
+	    	} else {
+		    	// arc drawn from left to right
+	    		c.arc(rectX+rectWidth/2, acci-radius*Math.cos(Math.PI/8), radius, 5*Math.PI/8 , 3*Math.PI/8, true);
+	    	}
+	    		    	
+    	} else {    
+    		if (isEllipse == true) {
+    			c.lineTo(rectX , acci) ;
+    			// arc drawn from right to left
+		    	c.arc(rectX+rectWidth/2, acci-radius*Math.cos(Math.PI/8), radius, 13*Math.PI/8 , 11*Math.PI/8, true);	
+    		} else {
+    			c.lineTo(rectX+rectWidth , acci) ;
+    			// arc drawn from left to right
+		    	c.arc(rectX+rectWidth/2, acci-radius*Math.cos(Math.PI/8), radius, 3*Math.PI/8 ,5*Math.PI/8);	
+    		}
+	    }	
+    	acci = rectY;
+    } else {
+    	c.lineTo(rectX , realHeight-step) ;
+    	// arc drawn from left to right
+    	c.arc(rectX+rectWidth/2, realHeight-step-radius*Math.cos(Math.PI/8), radius, 5*Math.PI/8 , 3*Math.PI/8, true);	
+    }		    
+    if ((series == 1) || (k == series-1) || (chartType=="bar")) {
+    	var drawDome = !isStacked(chartType) || (isStacked(chartType) && stop );
+    	if (drawDome) {
+	    	if (topRadius <= value) {			    	
+    			c.lineTo(rectX+rectWidth , rectY+topRadius) ;
+	    	} // else there is no line to draw
+    	}
+    } else {
+    	if (isH(chartType) && !isStacked(chartType)) {
+    		c.lineTo(rectX+rectWidth , rectY+topRadius) ;
+    	} else {
+    		if (isStacked(chartType)) {
+    			c.lineTo(rectX , rectY) ;
+    		} else {
+    			c.lineTo(rectX+rectWidth , rectY) ;
+    		}
+    	}
+    }      
+        
     return acci;
 }
 
@@ -1007,6 +1251,11 @@ function drawParallelipiped(k, i, rectX, rectY, rectWidth, grad, inverseGrad, st
 		}
 		c.stroke();
 		
+		if (stop) {	    
+	    	tempLineCtx.beginPath();
+	    	tempLineCtx.lineWidth=0.4;
+	    }
+		
 		c.lineWidth = 0.5;	
 		// draw front
 		c.beginPath();	
@@ -1014,13 +1263,18 @@ function drawParallelipiped(k, i, rectX, rectY, rectWidth, grad, inverseGrad, st
 		c.lineTo(rectX+rectWidth, rectY+p);
 		c.lineTo(rectX+rectWidth, acci+p);
 		c.lineTo(rectX,acci+p);
-		c.lineTo(rectX, rectY+p);        	    	
-		
+		c.lineTo(rectX, rectY+p);     		
 		c.closePath();
 		c.stroke();   		
 		c.globalAlpha = globalAlpha;
 		c.fill();  
 		c.globalAlpha = 1;		
+		if (stop) {	 	
+			//tempLineCtx.strokeStyle="red";
+			tempLineCtx.moveTo(rectX, rectY+p);
+			tempLineCtx.lineTo(rectX+rectWidth, rectY+p);			
+			tempLineCtx.lineTo(rectX+rectWidth, acci+p);
+		}
 	    
 	    // draw top		
 		c.fillStyle = inverseGrad;		
@@ -1035,6 +1289,21 @@ function drawParallelipiped(k, i, rectX, rectY, rectWidth, grad, inverseGrad, st
 		c.globalAlpha = globalAlpha;
 		c.fill();  
 		c.globalAlpha = 1;		
+		if (stop) {	 
+			var asideLine = true;
+			if (k < series-1) {
+				var nextValue = (obj.data[k+1][i]-minValY)*tickStep/yStep;			
+				if (!isStacked(chartType) && (value < nextValue)) {
+					asideLine = false;
+				}
+			}	
+			if (asideLine) {
+				tempLineCtx.moveTo(rectX+rectWidth+p,rectY);
+				tempLineCtx.lineTo(rectX+rectWidth, rectY+p);
+			}						
+			tempLineCtx.stroke();
+	    	tempLineCtx.closePath();
+		}
 		
 		// draw aside
 		c.fillStyle = inverseGrad;		
@@ -1064,45 +1333,67 @@ function drawParallelipiped(k, i, rectX, rectY, rectWidth, grad, inverseGrad, st
 		    acci = rectY;	    	
 		}
 		
-	} else {		
-		c.beginPath();	
-		c.moveTo(rectX, rectY+p);
-		if ((series == 1) || (k == series-1) || (chartType=="bar")) {		
-			c.lineTo(rectX+p, rectY-p);
-			if ((chartType=="bar") && (series > 1) && (k < series-1)) {
-				var nextValue = (obj.data[k+1][i]-minValY)*tickStep/yStep;
-				if (value<=nextValue) {
-					c.lineTo(rectX+rectWidth,rectY-p);
-				} else {
-					c.lineTo(rectX+rectWidth+p,rectY-p);
-				}
-			}  else {
-				c.lineTo(rectX+rectWidth+p,rectY-p);
-			}
-		} else {
-			c.lineTo(rectX+rectWidth, rectY);
-			c.lineTo(rectX+rectWidth+p, rectY-p);
-		}
+	} else {	
 		
-		if ((chartType=="bar") && (series > 1) && (k < series-1)) {		
-			var nextValue = (obj.data[k+1][i]-minValY)*tickStep/yStep;
-			if (value <= nextValue) {
-				c.lineTo(rectX+rectWidth, acci+p);
+		// highlight selection
+		if ((k == highlighterSerie) && (i == highlighterSerieIndex)) {						
+			acci = defineParallelipipedSelectionPath(k, i, rectX+1, rectY+1, rectWidth-2, p, value, stop, acci);	
+			highlight(k, 0.8);						
+		} else {
+			acci = defineParallelipipedSelectionPath(k, i, rectX, rectY, rectWidth, p, value, stop, acci);
+			unhighlight(k, i);
+		}				
+	}
+	return acci;
+	
+}
+
+function defineParallelipipedSelectionPath(k, i, rectX, rectY, rectWidth, p, value, stop, acci) {
+	c.beginPath();	
+	c.moveTo(rectX, rectY+p);
+
+	if ((series == 1) || (k == series-1) || (chartType=="bar")) {			
+		c.lineTo(rectX+p, rectY);			
+		if ((chartType=="bar") && (series > 1) && (k < series-1)) {
+			var nextValue = (obj.data[k+1][i]-minValY)*tickStep/yStep;			
+			if (value<=nextValue) {
+				c.lineTo(rectX+rectWidth,rectY);				
 			} else {
-				c.lineTo(rectX+rectWidth+p, acci-nextValue-p);
-				c.lineTo(rectX+rectWidth, acci-nextValue);
-				c.lineTo(rectX+rectWidth, acci+p);
-			}
-		} else {
-			c.lineTo(rectX+rectWidth+p, acci);
-			c.lineTo(rectX+rectWidth, acci+p);
-		}
+				c.lineTo(rectX+rectWidth+p,rectY);
+			}			
+			
+		}  else {
+			c.lineTo(rectX+rectWidth+p,rectY);
+			if (isHStacked(chartType)) {
+				
+			}		
+		}	
 		
-		c.lineTo(rectX,acci+p);		
-		c.lineTo(rectX, rectY+p);    
-		if (isStacked(chartType)) {		    				    	 
-		    acci = rectY;	    	
+	} else {
+		c.lineTo(rectX+rectWidth, rectY+p);
+		c.lineTo(rectX+rectWidth+p, rectY);
+	}
+	
+	
+	if ((chartType=="bar") && (series > 1) && (k < series-1)) {		
+		var nextValue = (obj.data[k+1][i]-minValY)*tickStep/yStep;
+		if (value <= nextValue) {
+			c.lineTo(rectX+rectWidth, acci+p);			
+		} else {
+			c.lineTo(rectX+rectWidth+p, acci-nextValue);
+			c.lineTo(rectX+rectWidth, acci-nextValue+p);
+			c.lineTo(rectX+rectWidth, acci+p);			
 		}
+	} else {
+		c.lineTo(rectX+rectWidth+p, acci);
+		c.lineTo(rectX+rectWidth, acci+p);		
+	}
+		
+	c.lineTo(rectX,acci+p);		
+	c.lineTo(rectX, rectY+p);   
+	
+	if (isStacked(chartType)) {		    				    	 
+	    acci = rectY;	    	
 	}
 	return acci;
 	
@@ -1363,7 +1654,7 @@ function drawInit() {
 				}	
 				c.save();
 				c.translate(0, realHeight/2);
-				c.scale(1, -1);		
+				c.scale(1, -1);			
 				var xoff = 0;			
 				if (chartType == "hstackedbar") {
 					xoff = 24;
@@ -1491,7 +1782,8 @@ function drawLabels(xLabelWidth) {
 						size=getAdjustableLabelFontSize();
 					}
 				}
-				c.scale(-1,1);						
+				c.scale(-1,1);	
+
 				var m = yLegendSpace;
 				if (m == 0) {
 					m = 0;							
@@ -1503,7 +1795,7 @@ function drawLabels(xLabelWidth) {
 					t = maxLabelWidth/3;
 				}
 				c.translate(-realHeight + step - maxLabelWidth/2 - m  + (tickCount-i)*tickStep, i*tickStep +  tickInit + hStep + 1 - labelWidth/3 -yLegendSpace/4-t  + step - xLabelWidth - xLegendSpace + legendSpace - size/4);	
-				c.rotate(-Math.PI/2);							
+				c.rotate(-Math.PI/2);	
 			}
 			
 			c.fillText(label + "",hStep - 15 - labelWidth , i*tickStep+tickInit+titleSpace+legendSpace);
@@ -1554,6 +1846,7 @@ function drawLabels(xLabelWidth) {
 				// X labels are transformed to appear on Y axis (they are vertical) 
 				c.scale(1,-1);
 				c.translate(0, -2*realHeight+ xLabelWidth + 3*xLegendSpace/2 );
+
 				var size = 20;
 				if (adjustableTextFontSize) {
 					size=getAdjustableLabelFontSize();
@@ -1567,7 +1860,7 @@ function drawLabels(xLabelWidth) {
 										
 				// rotate X labels to appear horizontal			
 				c.translate(realHeight-step-size/2+middleX+xLabelWidth/2+xLegendSpace/2, realHeight-middleX- c.measureText(labels[i]).width/2 - size/2 -xLegendSpace/2);						
-				c.rotate(Math.PI/2);				
+				c.rotate(Math.PI/2);
 							
 				c.fillText(labels[i],middleX  - c.measureText(labels[i]).width / 2, realHeight-step/2 - 2);					
 				c.restore();			
@@ -2036,6 +2329,10 @@ function isStacked(chartType) {
 
 function isH(chartType) {
 	return (chartType == "hbar") || (chartType == "hstackedbar");
+}
+
+function isHStacked(chartType) {
+	return (chartType == "hstackedbar");
 }
 
 function resizeCanvas() {
