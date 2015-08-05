@@ -15,7 +15,9 @@ Following types of charts & styles can be defined (where h stands for horizontal
 
 ![alt tag](http://2.bp.blogspot.com/-ouJicYwR4D0/Uv3pAiWORgI/AAAAAAAAJDo/a6RxWpXU3QM/s1600/NextServerCharts-white.png)
 
-NextCharts supports dual axis definition and it allows to have a combo chart with bars and lines. As opposite to other charts libraries, tooltips are seen only on real selection of elements (and not on any position) and they are following the mouse cursor to allow for a smooth visualization. Other charts libraries have a fixed position for tooltips when entering the selection and user cannot move the mouse to  a position which is under the tooltip, making the interaction more clumsy.
+NextCharts supports dual axis definition and it allows to have a combo chart with bars and lines. Highlight selection is available on mouse move.
+
+As opposite to other charts libraries, tooltips are seen only on real selection of elements (and not on any position) and they are following the mouse cursor to allow for a smooth visualization. Other charts libraries have a fixed position for tooltips when entering the selection and user cannot move the mouse to  a position which is under the tooltip, making the interaction more clumsy.
 
 A small number of widgets is also contained by this library. This set includes:
 
@@ -46,6 +48,7 @@ Some samples (to see how json properties must be specified) can be found in src/
 * [Display](http://blog.next-reports.com/2014/05/nextcharts-display-widget.html)
 * [Display-2](http://blog.next-reports.com/2014/08/display-revisited.html)
 * [Alarm](http://blog.next-reports.com/2014/06/nextcharts-alarm-widget.html)
+* [Highlights](http://blog.next-reports.com/2015/08/nextcharts-highlight-selection.html)
 
 ##Read more
 
