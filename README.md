@@ -17,7 +17,11 @@ Following types of charts & styles can be defined (where h stands for horizontal
 
 NextCharts supports dual axis definition and it allows to have a combo chart with bars and lines. As opposite to other charts libraries, tooltips are seen only on real selection of elements (and not on any position) and they are following the mouse cursor to allow for a smooth visualization. Other charts libraries have a fixed position for tooltips when entering the selection and user cannot move the mouse to  a position which is under the tooltip, making the interaction more clumsy.
 
-A small number of widgets is also contained by this library. This set includes alarm (status), indicator (gauge), display (value & comparison)
+A small number of widgets is also contained by this library. This set includes:
+
+* __Alarm__ (Status)
+* __Indicator__ (Gauge)
+* __Display__ (Value & Comparison)
 
 ![alt tag](http://2.bp.blogspot.com/-1lSssWLMPOs/U5hWOr0pwWI/AAAAAAAAJf8/Eof9uAbvvm4/s1600/a2.png)
 
