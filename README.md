@@ -29,6 +29,20 @@ Some samples (to see how json properties must be specified) can be found in src/
 2. main-jetty-test.html                       jetty chart test (must run ro.nextreports.charts.JsonHandler to start server)
 3. main-widget-test.html                      independent widget test   
 
+##Articles
+
+* [Origins](http://blog.next-reports.com/2014/02/nextcharts-new-html5-library-for.html)
+* [How To Use](http://blog.next-reports.com/2014/02/nextcharts-developer-perspective.html)
+* [Styles](http://blog.next-reports.com/2014/02/nextcharts-styles.html)
+* [Tooltips](http://blog.next-reports.com/2014/03/nextcharts-tooltip-messages.html)
+* [Dual Y Axis](http://blog.next-reports.com/2014/10/nextcharts-dual-y-axis.html)
+* [Combo Bar & Lines](http://blog.next-reports.com/2014/02/nextcharts-combo-bar-line-charts.html)
+* [Bubble Chart](http://blog.next-reports.com/2014/03/nextreports-creating-bubble-chart.html)
+* [Indicator](http://blog.next-reports.com/2014/05/nextcharts-indicator.html)
+* [Display](http://blog.next-reports.com/2014/05/nextcharts-display-widget.html)
+* [Display-2](http://blog.next-reports.com/2014/08/display-revisited.html)
+* [Alarm](http://blog.next-reports.com/2014/06/nextcharts-alarm-widget.html)
+
 ##Read more
 
 You can find information about NextCharts on following links:
