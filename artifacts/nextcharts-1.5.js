@@ -465,7 +465,7 @@ function find(array, v) {
 /*
  * Json must contain as mandatory only "data" attribute 
  * 
- * type -> bar, stackedbar, hbar, hstackedbar
+ * type -> bar, stackedbar, hbar, hstackedbar, nbar (bar with negative values)
  *     For bar and stackedbar we can have combo line series specified by lineData, lineColor and lineLegend
  * style -> normal, glass, cylinder, dome, parallelepiped
  * labelOrientation -> horizontal, vertical, diagonal, halfdiagonal
@@ -686,8 +686,6 @@ function drawBar(myjson, idCan, idTipCan, canWidth, canHeight) {
 	if (typeof background === "undefined") {	
 		background = "white";
 	}
-		
-	
 	
 	data = obj.data[0];
 	series = obj.data.length;
@@ -719,7 +717,13 @@ function drawBar(myjson, idCan, idTipCan, canWidth, canHeight) {
 	if (typeof startingFromZero === "undefined") {
 		startingFromZero = false;
 	}	
-	
+		
+	if (isN(chartType)) {
+		if ((chartStyle !== "normal") && (chartStyle !== "glass")) {
+			chartStyle = "normal";
+		}
+	}	
+				
 	showGridX = obj.showGridX;
 	if (typeof showGridX === "undefined") {
         showGridX = true;
@@ -794,6 +798,14 @@ function drawBar(myjson, idCan, idTipCan, canWidth, canHeight) {
     if (startingFromZero && (min > 0)) {
     	min = 0;
     } 
+    if (isN(chartType)) {
+    	// force to have 0 value inside the interval
+    	if (min > 0) {
+    		min = 0;
+    	} else if (max < 0) {
+    		max = 0;
+    	} 
+    }
     if (obj.lineData !== undefined) {
     	var lineMaxK = new Array(); 
     	var lineMinK = new Array();
@@ -1001,7 +1013,19 @@ function animDraw() {
     	tempCtx.drawImage(canvas, 0, 0);      	
         return false;
     }    
-    H += 1+(realHeight-step-titleSpace-legendSpace)/30;    
+    if (isN(chartType)) {    	    	
+    	var f = 30;   
+    	if (maxValY == 0) {
+    		f = 10;
+    	}
+    	if ((maxValY > 0) && (-minValY <= maxValY/2) && (-minValY > maxValY/4)) {
+    		f = 60;
+    	}           	
+    	H += 1+getXAxisYForNegativeValues()/f;
+    } else {
+    	H += 1+(realHeight-step-titleSpace-legendSpace)/30;
+    }
+    
     window.requestAnimFrame(animDraw);      
 }    
 
@@ -1056,12 +1080,29 @@ function drawData(withFill, withClick, mousePos) {
 	    if (obj.dualYaxis && (y2Count > 0) && (k >= series-y2Count) && (obj.lineData === undefined)) {
 	    	Yheight = realHeight-step-(dp-minValY2)*tickStep/y2Step;  
 	    }
-	    var rectY = realHeight-step-H;     	    	    
-	    if (rectY <= Yheight) {
-	        rectY = Yheight;
+	    
+	    var rectY;
+	    var nH;
+	    if (isN(chartType) && (max == 0)) {
+	    	// all values are negative
+	    	rectY = getXAxisYForNegativeValues();  	
+	    	
+	    	nH = getXAxisYForNegativeValues() + H;
+			var yn = getYPosForNegativeValues(k, i, 0);
+			if (nH > yn) {
+				nH = yn;
+			} else {
+				stop = false;
+			}
 	    } else {
-	        stop = false;
-	    }        
+		    rectY = realHeight-step-H;     		   
+			if (rectY <= Yheight) {
+			    rectY = Yheight;
+			} else {
+			    stop = false;
+			}       
+	    }
+	    
 	    if (rectY+2 > xaxisY) {
 	        rectY = xaxisY-1;
 	        cornerRadius = 1;
@@ -1085,9 +1126,9 @@ function drawData(withFill, withClick, mousePos) {
 	    var inverseGrad = c.createLinearGradient(rectX, realWidth-hStep-hStep2 , rectX + rectWidth , realWidth-hStep-hStep2); 		      
 	    inverseGrad.addColorStop(0,seriesColor[k]);
 	    inverseGrad.addColorStop(1,lColor); // light color
-	    	  	    	    	    
+	    	  	    		    
 	    if (chartStyle == "glass") {	    	 		    
-	    	acc[i] = drawGlass(k, i, rectX, rectY, rectWidth, grad, acc[i], withFill);
+	    	acc[i] = drawGlass(k, i, rectX, rectY, rectWidth, grad, acc[i], nH, withFill);
 	    } else if (chartStyle == "cylinder") {	    
 	    	acc[i] = drawCylinder(k, i, rectX, rectY, rectWidth, grad, inverseGrad, stop, acc[i], withFill);
 	    } else if (chartStyle == "dome") {			    	
@@ -1096,7 +1137,7 @@ function drawData(withFill, withClick, mousePos) {
 	    	acc[i] = drawParallelipiped(k, i, rectX, rectY, rectWidth, grad, inverseGrad, stop, acc[i], withFill);
 	    } else {	    	
 	    	// normal style
-	    	acc[i] = drawRectangle(k, i, rectX, rectY, rectWidth, acc[i], withFill);
+	    	acc[i] = drawRectangle(k, i, rectX, rectY, rectWidth, acc[i], nH, withFill);
 	    } 
 	    
 	    var found;
@@ -1323,14 +1364,30 @@ function unhighlight(k, i) {
 	}
 }
 
-function drawRectangle(k, i, rectX, rectY, rectWidth, acci, withFill) {	
+function drawRectangle(k, i, rectX, rectY, rectWidth, acci, nH, withFill) {	
 	var h = acci;
+	if (isN(chartType)) {
+		if (max == 0) {
+			h = nH;
+		} else {
+			h = getXAxisYForNegativeValues() + H;
+			var yn = getYPosForNegativeValues(k, i, 0);
+			if (h > yn) {
+				h = yn;
+			} else {
+				stop = false;
+			}
+		}
+	}
 	var rectXSel = rectX;
 	var rectYSel = rectY;
 	var rectWidthSel = rectWidth;
 	if (!withFill) {	
 		// prepare for highlight selection
 		h = acci-2;
+		if (isN(chartType)) {			
+			h = getYPosForNegativeValues(k, i, 2);			
+		}
 		if ((k == highlighterSerie) && (i == highlighterSerieIndex)) {
 			rectXSel = rectX+2;
 			rectYSel = rectY+2;
@@ -1338,8 +1395,14 @@ function drawRectangle(k, i, rectX, rectY, rectWidth, acci, withFill) {
 		} else {
 			if ((k == 0) || !isStacked(chartType)) {
 				h = acci-1;
+				if (isN(chartType)) {					
+					h = getYPosForNegativeValues(k, i, 1);					
+				}
 			} else {
 				h = acci;
+				if (isN(chartType)) {
+					h = getYPosForNegativeValues(k, i, 0);					
+				}
 			}
 		}
 	}
@@ -1467,7 +1530,7 @@ function defineCylinderSelectionPath(k, rectX, rectY, rectWidth, acci) {
     return acci;
 }
 
-function drawGlass(k, i, rectX, rectY, rectWidth, grad, acci, withFill) {
+function drawGlass(k, i, rectX, rectY, rectWidth, grad, acci, nH, withFill) {
     if (withFill) {
     	c.fillStyle = grad;
     }	
@@ -1476,9 +1539,25 @@ function drawGlass(k, i, rectX, rectY, rectWidth, grad, acci, withFill) {
 	var rectYSel = rectY;
 	var rectWidthSel = rectWidth;
 	var yPos = realHeight-step;
+	if (isN(chartType)) {	
+		if (max == 0) {
+			yPos = nH;
+		} else {
+			yPos = getXAxisYForNegativeValues() + H;		
+			var yn = getYPosForNegativeValues(k, i, 0);		
+			if (yPos > yn) {
+				yPos = yn;
+			} else {
+				stop = false;
+			}
+		}		
+	}
 	if (!withFill) {		   		
 		h = acci-2;
 		yPos = realHeight-step-2;
+		if (isN(chartType)) {
+			yPos = getYPosForNegativeValues(k, i, 2);
+		}
 		if ((k == highlighterSerie) && (i == highlighterSerieIndex)) {
 			rectXSel = rectX+2;
 			rectYSel = rectY+2;
@@ -1486,13 +1565,19 @@ function drawGlass(k, i, rectX, rectY, rectWidth, grad, acci, withFill) {
 		} else {					
 			if ((k == 0) || !isStacked(chartType)) {				
 				yPos = realHeight-step-1 ;
+				if (isN(chartType)) {
+					yPos = getYPosForNegativeValues(k, i, 1);
+				}
 				h = acci-1;
 			} else {
 				h = acci-1;
 				yPos = realHeight-step;
+				if (isN(chartType)) {
+					yPos = getYPosForNegativeValues(k, i, 0);
+				}
 			}
 		}
-	}
+	}	
 	defineGlassPath(rectXSel, rectYSel, rectWidthSel, k, i, h, yPos);
 	if (isStacked(chartType)) {		    	    		
     	acci = rectY;	    
@@ -1521,16 +1606,26 @@ function drawGlass(k, i, rectX, rectY, rectWidth, grad, acci, withFill) {
 }
 
 function defineGlassPath(rectX, rectY, rectWidth, k, i, acci, yPos) {
+	cornerRadius = 6;
 	// instead of a rectangle draw a path with rounded corners
     c.beginPath();	    
     if (rectWidth <= 2*cornerRadius*series) {
         cornerRadius = 2;
     }    
-    c.moveTo(rectX+cornerRadius, rectY);
-    c.lineTo(rectX + rectWidth - cornerRadius , rectY);
-    if (!isStacked(chartType) || (k == series-1) ) {	
-    	c.arcTo(rectX + rectWidth, rectY, rectX + rectWidth , rectY + cornerRadius, cornerRadius);
+    if (isN(chartType) && (obj.data[k][i] < 0)) {
+    	c.moveTo(rectX, rectY+2);
+    	c.lineTo(rectX + rectWidth , rectY+2);
     } else {
+    	c.moveTo(rectX+cornerRadius, rectY);
+    	c.lineTo(rectX + rectWidth - cornerRadius , rectY);
+    }
+    if (!isStacked(chartType) || (k == series-1)) {	    
+    	if (isN(chartType) && (obj.data[k][i] < 0)) {
+    		c.lineTo(rectX + rectWidth , rectY+2);
+    	} else {
+    		c.arcTo(rectX + rectWidth, rectY, rectX + rectWidth , rectY + cornerRadius, cornerRadius);
+    	}
+    } else {    	
     	c.lineTo(rectX + rectWidth , rectY);
     }
     if (isStacked(chartType)) {		    	
@@ -1538,12 +1633,21 @@ function defineGlassPath(rectX, rectY, rectWidth, k, i, acci, yPos) {
     	c.lineTo(rectX , acci) ;	 
     	//acci = rectY;	    	
     } else {
-    	c.lineTo(rectX + rectWidth, yPos) ;
-    	c.lineTo(rectX , yPos) ;
+    	if (isN(chartType) && (obj.data[k][i] < 0)) {
+    		c.lineTo(rectX + rectWidth, yPos-cornerRadius) ;
+    		c.arcTo(rectX + rectWidth, yPos, rectX + rectWidth-cornerRadius, yPos, cornerRadius);
+    		c.lineTo(rectX+cornerRadius , yPos) ;
+    		c.arcTo(rectX, yPos, rectX, yPos-cornerRadius, cornerRadius);    		
+    	} else {
+    		c.lineTo(rectX + rectWidth, yPos) ;
+    		c.lineTo(rectX , yPos) ;
+    	}
     }
     if (!isStacked(chartType) || (k == series-1) ) {	
-    	c.lineTo(rectX , rectY+cornerRadius) ;
-    	c.arcTo(rectX, rectY, rectX + rectWidth - cornerRadius , rectY , cornerRadius);
+    	if (!isN(chartType) || (obj.data[k][i] > 0)) {    		
+    		c.lineTo(rectX , rectY+cornerRadius) ;
+    		c.arcTo(rectX, rectY, rectX + rectWidth - cornerRadius , rectY , cornerRadius);
+    	}
     } else {
     	c.lineTo(rectX , rectY) ;
     }
@@ -2205,7 +2309,12 @@ function drawInit() {
 	tickStep = (realHeight-step-titleSpace-legendSpace-tickInit)/tickCount; 	
 
 	// compute Y value for xAxis
-	xaxisY = tickCount*tickStep+tickInit+titleSpace+legendSpace; 	
+	
+	if (isN(chartType) && (min !== 0) && (max !== 0)) {
+		xaxisY = getXAxisYForNegativeValues(); 
+	} else {
+		xaxisY = tickCount*tickStep+tickInit+titleSpace+legendSpace; 
+	}
 	
 	drawLabels(xLabelWidth);
 }
@@ -2447,24 +2556,32 @@ function drawAxis() {
 	c.stroke();
 	
 	// x axis
+	if (isN(chartType)) {
+		c.lineWidth = 1.2; 
+	}
 	if (obj.colorXaxis !== "undefined") {
 		c.strokeStyle = obj.colorXaxis;
 	}	
 	c.beginPath(); 
-	c.moveTo(hStep-10,realHeight-step); 
+	var yy = realHeight-step;
+	if (isN(chartType)) {
+		yy = getXAxisYForNegativeValues();
+	}
+	c.moveTo(hStep-10,yy); 
 	if (isH(chartType)) {
-		c.lineTo(realWidth,realHeight-step);
+		c.lineTo(realWidth,yy);
 	} else {
 		var diff = 5;
 		if (obj.dualYaxis) {
 			diff = hStep2 - 5;
 		}
-		c.lineTo(realWidth-diff,realHeight-step);
+		c.lineTo(realWidth-diff,yy);
 	}
 	c.closePath();
 	c.stroke();
 	
 	// second y axis
+	c.lineWidth = 2.0;
 	if (obj.dualYaxis) {
 		if (obj.colorY2axis !== "undefined") {
 			c.strokeStyle = obj.colorY2axis;
@@ -2807,6 +2924,10 @@ function isHStacked(chartType) {
 	return (chartType == "hstackedbar");
 }
 
+function isN(chartType) {
+	return (chartType == "nbar");
+}
+
 function resizeCanvas() {
 	var can = document.getElementById(idCan);	
 	if (can != null) {		
@@ -2833,6 +2954,31 @@ function getAdjustableTitleFontSize() {
 
 function getAdjustableLabelFontSize() {
 	return canvas.width/45;	
+}
+
+function getXAxisYForNegativeValues() {
+	if ((min < 0) && (max > 0)) {
+		return realHeight-step+minValY*tickStep/yStep;   
+	} else {
+		if (max == 0) {
+			return realHeight-step-tickStep*tickCount;   
+		}
+		return xaxisY;
+	}
+}
+
+function getValueYForNegativeValues(dp) {
+	return realHeight-step-(dp-minValY)*tickStep/yStep; 
+}
+
+function getYPosForNegativeValues(k, i, delta) {
+	var result = 0;	
+	if (obj.data[k][i] < 0) {
+		result = getValueYForNegativeValues(obj.data[k][i])-delta;
+	} else {
+		result = getXAxisYForNegativeValues()-delta;
+	}	
+	return result;
 }
 
 drawBar(myjson, idCan, idTipCan, canWidth, canHeight);
@@ -6204,7 +6350,7 @@ function nextChart(myjson, idCan, idTipCan, canWidth, canHeight) {
 }	
 
 function isBar(chartType) {
-	return (chartType == "bar") || (chartType == "hbar") || (chartType == "stackedbar") || (chartType == "hstackedbar");
+	return (chartType == "bar") || (chartType == "hbar") || (chartType == "stackedbar") || (chartType == "hstackedbar") ||  (chartType == "nbar");
 }
 
 function isLine(chartType) {

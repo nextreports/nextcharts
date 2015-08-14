@@ -29,7 +29,7 @@ function nextChart(myjson, idCan, idTipCan, canWidth, canHeight) {
 }	
 
 function isBar(chartType) {
-	return (chartType == "bar") || (chartType == "hbar") || (chartType == "stackedbar") || (chartType == "hstackedbar");
+	return (chartType == "bar") || (chartType == "hbar") || (chartType == "stackedbar") || (chartType == "hstackedbar") ||  (chartType == "nbar");
 }
 
 function isLine(chartType) {

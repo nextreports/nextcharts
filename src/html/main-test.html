@@ -122,8 +122,8 @@
 	}
 						
 	// create test jsons
-	function createJsons() {			
-		
+	function createJsons() {		
+				
 		jsons.push({id:"1", json:"{\"data\":[[16,66,24,30,80,52],[48,50,29,60,70,58],[30,40,28,52,74,50]]," + 
 	        " \"labels\":[\"JANUARY\",\"FEBRUARY\",\"MARCH\",\"APRIL\",\"MAY\",\"JUNE\"]," + 
 			" \"color\":[\"#004CB3\",\"#A04CB3\",\"#7aa37a\"]," +
@@ -277,6 +277,27 @@
 	        " \"xLegend\":{\"text\":\"Life Expectancy\",\"font\":{\"weight\":\"bold\",\"size\":14,\"family\":\"sans-serif\"}, \"color\":\"#993366\"}" +
 	        "}"});
 		
+		jsons.push({id:"8", 
+			//json:"{\"data\":[[-6300,-850,-5520,-3760,-900,-3000],[-2500,-1200,-2020,-2700,-4200,-1800],[-1600,-950,-4543,-2090,-1005,-7000]]," +
+			//json:"{\"data\":[[6300,850,5520,3760,900,3000],[2500,1200,2020,2700,4200,1800],[1600,950,4543,2090,1005,7000]]," +
+			json:"{\"data\":[[6300,-850,5520,3760,-900,-3000],[2500,-1200,2020,2700,4200,1800],[-1600,950,4543,-2090,1005,7000]]," +
+	        " \"labels\":[\"JAN\",\"FEB\",\"MAR\",\"APR\",\"MAY\",\"JUN\"]," + 
+			" \"color\":[\"#004CB3\",\"#A04CB3\",\"#7aa37a\"]," +
+	        " \"legend\":[\"2011\",\"2012\",\"2013\"]," +
+			" \"alpha\":0.6," + 
+			" \"showGridX\":false," + 
+			" \"showGridY\":false," +		
+	        " \"message\":\"Value #val\"," + 
+	        " \"tickCount\":5, " +
+			" \"title\":{\"text\":\"Financial Analysis\", \"font\":{\"weight\":\"bold\", \"size\":16, \"family\":\"sans-serif\"}, \"color\":\"blue\"}," +
+	        " \"labelOrientation\":\"horizontal\"," +
+	        " \"background\":\"" + background + "\"," +
+	        " \"type\":\"nbar\"," +
+	        " \"style\":\"glass\"," +
+	        " \"yData\":{\"font\":{\"weight\":\"bold\",\"size\":10,\"family\":\"sans-serif\"}, \"color\":\"blue\"}," +
+	        " \"xData\":{\"font\":{\"weight\":\"bold\",\"size\":10,\"family\":\"sans-serif\"}, \"color\":\"blue\"}," +
+	        " \"onClick\":\"function doClick(value){ console.log('Call from function : ' + value);}\""+
+		"}"});
 	}
 	
 </script>
