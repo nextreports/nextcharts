@@ -2,9 +2,10 @@
 
 NextCharts is an open source HTML5 charts library which uses the canvas tag for drawing. This library is used by [NextReports](https://github.com/nextreports/nextreports) from version 7.
 
-Following types of charts & styles can be defined (where h stands for horizontal):  
+Following types of charts & styles can be defined (where h stands for horizontal and n for negative):  
   
 * __bar__ : normal, glass, dome, cylinder, parallelepiped, combo with lines  
+* __nbar__ : normal, glass
 * __stackedbar__ : normal, glass, dome, cylinder, parallelepiped  
 * __hbar__ : normal, glass, dome, cylinder, parallelepiped  
 * __hstackedbar__ : normal, glass, dome, cylinder, parallelepiped  
