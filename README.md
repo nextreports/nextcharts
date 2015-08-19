@@ -50,6 +50,7 @@ Some samples (to see how json properties must be specified) can be found in src/
 * [Display-2](http://blog.next-reports.com/2014/08/display-revisited.html)
 * [Alarm](http://blog.next-reports.com/2014/06/nextcharts-alarm-widget.html)
 * [Highlights](http://blog.next-reports.com/2015/08/nextcharts-highlight-selection.html)
+* [Bar Chart with Negative Values](http://blog.next-reports.com/2015/08/nextcharts-bar-charts-with-negative.html)
 
 ##Read more
 
