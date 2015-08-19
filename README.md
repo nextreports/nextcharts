@@ -1,5 +1,7 @@
 #NextCharts
 
+Current build status: [![Build Status](https://travis-ci.org/nextreports/nextcharts.png?branch=master)](https://travis-ci.org/nextreports/nextcharts)
+
 NextCharts is an open source HTML5 charts library which uses the canvas tag for drawing. This library is used by [NextReports](https://github.com/nextreports/nextreports) from version 7.
 
 Following types of charts & styles can be defined (where h stands for horizontal and n for negative):  
