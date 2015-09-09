@@ -979,7 +979,7 @@ function drawCylinder(k, i, rectX, rectY, rectWidth, grad, inverseGrad, stop, ac
 	    // arc drawn from right to left
 	    c.arc(rectX+rectWidth/2, rectY-radius*Math.cos(Math.PI/8), radius, 3*Math.PI/8 , 5*Math.PI/8);
 	     
-	    if (stop && (k == series-1)) {	    
+	    if (stop && ((k == series-1) || !isStacked(chartType))) {	    
 	    	tempLineCtx.beginPath();
 	    	tempLineCtx.lineWidth=0.4;
 	    	tempLineCtx.arc(rectX+rectWidth/2, rectY-radius*Math.cos(Math.PI/8), radius, 3*Math.PI/8 , 5*Math.PI/8);
