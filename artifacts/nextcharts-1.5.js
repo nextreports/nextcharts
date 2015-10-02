@@ -1443,7 +1443,7 @@ function drawCylinder(k, i, rectX, rectY, rectWidth, grad, inverseGrad, stop, ac
 	    // arc drawn from right to left
 	    c.arc(rectX+rectWidth/2, rectY-radius*Math.cos(Math.PI/8), radius, 3*Math.PI/8 , 5*Math.PI/8);
 	     
-	    if (stop && (k == series-1)) {	    
+	    if (stop && ((k == series-1) || !isStacked(chartType))) {	    
 	    	tempLineCtx.beginPath();
 	    	tempLineCtx.lineWidth=0.4;
 	    	tempLineCtx.arc(rectX+rectWidth/2, rectY-radius*Math.cos(Math.PI/8), radius, 3*Math.PI/8 , 5*Math.PI/8);
@@ -2484,11 +2484,13 @@ function drawGrid() {
 	// draw  horizontal grid  (for Y labels)
 	if (showGridY) {
 		if (obj.styleGridY !== "undefined") {
-			if (obj.styleGridY == "dot") {
-				c.setLineDash([1, 3]);
-			} else if (obj.styleGridY == "dash") {
-				c.setLineDash([5, 8]);
-			} 	
+			if (c.setLineDash) {
+				if (obj.styleGridY == "dot") {
+					c.setLineDash([1, 3]);
+				} else if (obj.styleGridY == "dash") {
+					c.setLineDash([5, 8]);
+				} 	
+			}
 		}	
 		for(var i=0; i<tickCount+1; i++) {        			    	    	    
 	    	var xColor = c.strokeStyle;
@@ -2508,17 +2510,21 @@ function drawGrid() {
 	        c.lineWidth = 2.0;   
 	        c.strokeStyle = xColor;
 	    }   
-		c.setLineDash([]);
+		if (c.setLineDash) {
+			c.setLineDash([]);
+		}
 	} 	
 	
 	// draw  vertical grid  (for X labels)
     if (showGridX) {
     	if (obj.styleGridX !== "undefined") {
-			if (obj.styleGridX == "dot") {
-				c.setLineDash([1, 3]);
-			} else if (obj.styleGridX == "dash") {
-				c.setLineDash([5, 8]);
-			} 	
+    		if (c.setLineDash) {
+				if (obj.styleGridX == "dot") {
+					c.setLineDash([1, 3]);
+				} else if (obj.styleGridX == "dash") {
+					c.setLineDash([5, 8]);
+				} 	
+    		}
 		}	
     	for(var i=0; i<labels.length; i++) {   
     		var middleX = hStep + i*(realWidth-hStep-hStep2 )/data.length + (realWidth - hStep - hStep2 - gap*(1+Math.sqrt(series)))/data.length/2;	    	    
@@ -2535,7 +2541,9 @@ function drawGrid() {
 	        c.lineWidth = 2.0;   
 	        c.strokeStyle = yColor;
 	    }    
-    	c.setLineDash([]);
+    	if (c.setLineDash) {
+    		c.setLineDash([]);
+    	}
 	}  	
 	
 }
@@ -3879,11 +3887,13 @@ function drawGrid() {
 	// draw  horizontal grid  (for Y labels)
 	if (showGridY) {
 		if (obj.styleGridY !== "undefined") {
-			if (obj.styleGridY == "dot") {
-				c.setLineDash([1, 3]);
-			} else if (obj.styleGridY == "dash") {
-				c.setLineDash([5, 8]);
-			} 	
+			if (c.setLineDash) {
+				if (obj.styleGridY == "dot") {
+					c.setLineDash([1, 3]);
+				} else if (obj.styleGridY == "dash") {
+					c.setLineDash([5, 8]);
+				} 	
+			}
 		}		
 		for(var i=0; i<tickCount+1; i++) {        			    	    	    
 	    	var xColor = c.strokeStyle;
@@ -3903,17 +3913,21 @@ function drawGrid() {
 	        c.lineWidth = 2.0;   
 	        c.strokeStyle = xColor;
 	    }    
-		c.setLineDash([]);
+		if (c.setLineDash) {
+			c.setLineDash([]);
+		}
 	} 	
 	
 	// draw  vertical grid  (for X labels)
     if (showGridX) {
     	if (obj.styleGridX !== "undefined") {
-			if (obj.styleGridX == "dot") {
-				c.setLineDash([1, 3]);
-			} else if (obj.styleGridX == "dash") {
-				c.setLineDash([5, 8]);
-			} 	
+    		if (c.setLineDash) {
+				if (obj.styleGridX == "dot") {
+					c.setLineDash([1, 3]);
+				} else if (obj.styleGridX == "dash") {
+					c.setLineDash([5, 8]);
+				} 	
+    		}
 		}	
     	for(var i=0; i<labels.length; i++) {   
     		var middleX = hStep + i*(realWidth-hStep-hStep2 )/data.length + (realWidth - hStep - hStep2 - gap*(1+Math.sqrt(series)))/data.length/2;	    	    
@@ -3930,7 +3944,9 @@ function drawGrid() {
 	        c.lineWidth = 2.0;   
 	        c.strokeStyle = yColor;
 	    }  
-    	c.setLineDash([]);
+    	if (c.setLineDash) {
+    		c.setLineDash([]);
+    	}
 	}  	
 	
 }
@@ -5951,11 +5967,13 @@ function drawGrid() {
 	// draw  horizontal grid  (for Y labels)
 	if (showGridY) {
 		if (obj.styleGridY !== "undefined") {
-			if (obj.styleGridY == "dot") {
-				c.setLineDash([1, 3]);
-			} else if (obj.styleGridY == "dash") {
-				c.setLineDash([5, 8]);
-			} 	
+			if (c.setLineDash) {
+				if (obj.styleGridY == "dot") {
+					c.setLineDash([1, 3]);
+				} else if (obj.styleGridY == "dash") {
+					c.setLineDash([5, 8]);
+				} 	
+			}
 		}	
 		for(var i=0; i<tickCount+1; i++) {        			    	    	    
 	    	var xColor = c.strokeStyle;
@@ -5971,17 +5989,21 @@ function drawGrid() {
 	        c.lineWidth = 2.0;   
 	        c.strokeStyle = xColor;
 	    }   
-		c.setLineDash([]);
+		if (c.setLineDash) {
+			c.setLineDash([]);
+		}
 	} 	
 	
 	// draw  vertical grid  (for X labels)
     if (showGridX) {
     	if (obj.styleGridX !== "undefined") {
-			if (obj.styleGridX == "dot") {
-				c.setLineDash([1, 3]);
-			} else if (obj.styleGridX == "dash") {
-				c.setLineDash([5, 8]);
-			} 	
+    		if (c.setLineDash) {
+				if (obj.styleGridX == "dot") {
+					c.setLineDash([1, 3]);
+				} else if (obj.styleGridX == "dash") {
+					c.setLineDash([5, 8]);
+				} 	
+    		}
 		}	
     	for(var i=0; i<labels.length; i++) {   
     		var middleX = hStep + i*(realWidth-hStep )/labels.length + (realWidth - hStep - gap*2)/labels.length/2;	    	    
@@ -5998,7 +6020,9 @@ function drawGrid() {
 	        c.lineWidth = 2.0;   
 	        c.strokeStyle = yColor;
 	    }   
-    	c.setLineDash([]);
+    	if (c.setLineDash) {
+    		c.setLineDash([]);
+    	}
 	}  	
 	
 }
