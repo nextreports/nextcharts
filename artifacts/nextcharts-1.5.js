@@ -6479,6 +6479,10 @@ var drawIndicatorText = function(id, title, description, unit, min, max, value, 
 
 // fill component with color
 var drawIndicatorColor = function(id, angle, color, title, d, shadow) {
+	
+	if ((d.y == 0) || (d.radix == 0)) {
+		return;
+	}
   
    var can = document.getElementById(id);
    var ctx = can.getContext('2d');      
@@ -6521,6 +6525,10 @@ var drawIndicatorColor = function(id, angle, color, title, d, shadow) {
 
 // draw the component frame
 var drawIndicatorArc = function(id, d) {
+	
+	if (d.radix <= d.arcWidth + 0.5) {
+		return;
+	}
   
   var can = document.getElementById(id);
   var ctx = can.getContext('2d');       
@@ -7002,6 +7010,10 @@ function alarm(id, myjson, zoom, useParentWidth) {
 	}
     
     function drawAlarmCircle(id,x,y,r,d,grd) {
+    	
+    	if (r <= 0) {
+    		return;
+    	}
     	
     	var can = document.getElementById(id);
     	var ctx = can.getContext('2d');  

@@ -167,6 +167,10 @@ function alarm(id, myjson, zoom, useParentWidth) {
     
     function drawAlarmCircle(id,x,y,r,d,grd) {
     	
+    	if (r <= 0) {
+    		return;
+    	}
+    	
     	var can = document.getElementById(id);
     	var ctx = can.getContext('2d');  
     	
